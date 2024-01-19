@@ -29,6 +29,113 @@ DocClassifier 是一個創新的文本圖像分類系統，它的設計靈感源
 
 ---
 
+## 快速開始
+
+### 安裝
+
+目前我們沒有提供 Pypi 上的安裝包，若要使用本專案，您可以直接從 Github 上 clone 本專案，然後安裝相依套件，安裝前請確認您已經安裝了 [DocsaidKit](https://github.com/DocsaidLab/DocsaidKit)。
+
+若已經安裝 DocsaidKit，請按照以下步驟進行：
+
+1. Clone 專案：
+
+   ```bash
+   git clone https://github.com/DocsaidLab/DocClassifier.git
+   ```
+
+2. 進入專案目錄：
+
+   ```bash
+   cd DocClassifier
+   ```
+
+3. 建立打包文件：
+
+   ```bash
+   python setup.py bdist_wheel
+   ```
+
+4. 安裝打包文件：
+
+   ```bash
+   pip install dist/docclassifier-*-py3-none-any.whl
+   ```
+
+遵循這些步驟，您應該能夠順利完成 DocClassifier 的安裝。
+
+安裝完成後即可以使用本專案。
+
+---
+
+### 導入必要的依賴項
+
+我們提供了一個簡單的模型推論介面，其中包含了前後處理的邏輯。
+
+首先，您需要導入所需的相關依賴並創建 DocClassifier 類別。
+
+
+```python
+import docsaidkit as D
+from docsaidkit import Backend
+from docclassifier import DocClassifier
+```
+
+### Backend
+
+`Backend` 是一個枚舉類型，用於指定 DocClassifier 的運算後端。它包含以下選項：
+
+- `cpu`：使用 CPU 進行運算。
+- `cuda`：使用 GPU 進行運算（需要適當的硬體支援）。
+
+ONNXRuntime 支援了非常多的後端，包括 CPU、CUDA、OpenCL、DirectX、TensorRT 等等，若您有其他需求，可以參考 [**ONNXRuntime Execution Providers**](https://onnxruntime.ai/docs/execution-providers/index.html)，並自行修改成對應的後端。
+
+### 創建 DocClassifier 實例
+
+```python
+model = DocClassifier(
+    gpu_id=0,  # GPU 編號，如果不使用 GPU 請設為 -1
+    backend=Backend.cpu,  # 選擇運算後端，可以是 Backend.cpu 或 Backend.cuda
+)
+```
+
+注意事項：
+
+- 使用 cuda 運算除了需要適當的硬體支援外，還需要安裝相應的 CUDA 驅動程式和 CUDA 工具包。如果您的系統中沒有安裝 CUDA，或安裝的版本不正確，則無法使用 CUDA 運算後端。
+
+- 關於 onnxruntime 安裝依賴相關的問題，請參考 [ONNXRuntime Release Notes](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements)
+
+### 讀取和處理圖像
+
+```python
+# 讀取圖像
+img = D.imread('path/to/your/image.jpg')
+
+# 您也可以使用我們提供的測試圖像
+# img = D.imread('docs/run_test_card.jpg')
+
+# 使用模型進行推論
+result = model(img) # result 是一個 Document 類型
+```
+
+### 輸出結果
+
+您得到的推論結果是基於模組內的註冊資料集，模型會從中找出最相似的類別，並且輸出類別的標籤和分數。
+
+```python
+import docsaidkit as D
+from docclassifier import DocClassifier
+
+model = DocClassifier(D.Backend.cpu)
+img = D.imread('docs/run_test_card.jpg')
+result = model(img)
+```
+
+<div align="center">
+    <img src="./docs/result.jpg" width="800">
+</div>
+
+---
+
 ## 評估模型（Benchmark）
 
 我們內部有一份測試資料集，但受限於隱私保護，我們無法開源這份資料，只能提供基於這份資料的評估結果。
