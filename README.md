@@ -14,7 +14,7 @@
     <img src="./docs/title.jpg" width="800">
 </div>
 
-DocClassifier is an innovative text-image classification system, inspired by facial recognition technology and deeply optimized to address the limitations traditional classifiers face when dealing with text images. This system is particularly suited for scenarios that require rapid identification and registration of new text types, such as in fintech, banking, and the sharing economy sectors.
+DocClassifier is an innovative document image classification system, inspired by facial recognition technology and deeply optimized to address the limitations traditional classifiers face when dealing with text images. This system is particularly suited for scenarios that require rapid identification and registration of new text types, such as in fintech, banking, and the sharing economy sectors.
 
 Our system employs advanced feature learning model architectures, combined with innovative loss functions like CosFace and ArcFace, effectively achieving precise classification without the need for presetting a large number of category heads. To train this model, we independently collected about 800 diverse text images and expanded our dataset through image enhancement techniques, ensuring the model learns a rich set of features.
 
