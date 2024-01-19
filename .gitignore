@@ -160,9 +160,10 @@ cython_debug/
 #.idea/
 
 tmp/
-data/
+data/證件母圖/
 docs_benchmark_dataset/
 register/
+private/
 
 lcnet050_cosface_96/
 
