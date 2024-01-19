@@ -230,7 +230,7 @@ D.imwrite(img, f'label_{label}.jpg')
 ```
 
 <div align="center">
-    <img src="./docs/test_sync_dataset.jpg" width="500">
+    <img src="./docs/test_sync_dataset.jpg" width="300">
 </div>
 
 - Please note: This is a fully synthetic dataset, so we have implemented a mechanism for random image generation. Do not be surprised if the image you receive differs from the example shown above.

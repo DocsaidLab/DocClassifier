@@ -346,7 +346,7 @@ D.imwrite(img, f'label_{label}.jpg')
 ```
 
 <div align="center">
-    <img src="./docs/test_sync_dataset.jpg" width="500">
+    <img src="./docs/test_sync_dataset.jpg" width="300">
 </div>
 
 - 請注意：這是全合成資料集，因此我們在輸出影像時給予隨機出圖的機制，如果您得到的影像和上面的範例不一樣，請不要驚訝。
