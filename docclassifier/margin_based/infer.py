@@ -38,11 +38,13 @@ class Inference:
             'model_path': 'lcnet050_arcface_fp32.onnx',
             'file_id': '',
             'img_size_infer': (96, 96),
+            'threshold': 0.7021  # FPR=0.01
         },
         'lcnet050_cosface': {
             'model_path': 'lcnet050_cosface_fp32.onnx',
             'file_id': '',
             'img_size_infer': (96, 96),
+            'threshold': 0.6765  # FPR=0.01
         },
     }
 
@@ -51,7 +53,7 @@ class Inference:
         gpu_id: int = 0,
         backend: D.Backend = D.Backend.cpu,
         model_cfg: str = 'lcnet050_arcface',
-        threshold: float = 0.8,
+        threshold: float = None,
         docbank_root: Union[str, D.Path] = None,
         **kwargs
     ):
@@ -64,7 +66,7 @@ class Inference:
             os.system(D.gen_download_cmd(file_id, model_path))
         self.model = D.ONNXEngine(model_path, gpu_id, backend, **kwargs)
         self.bank = self.get_doc_bank(docbank_root)
-        self.threshold = threshold
+        self.threshold = threshold if threshold is not None else cfg['threshold']
 
     @staticmethod
     def compare(feat1, feat2):

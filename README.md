@@ -24,7 +24,151 @@ On our validation dataset, our model demonstrated over 99% accuracy based on a z
 
 ---
 
-## Model Evaluation (Benchmark)
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Table of Contents](#table-of-contents)
+- [Quick Start](#quick-start)
+- [Benchmark](#benchmark)
+- [Before We start Training](#before-we-start-training)
+- [Training the Model](#training-the-model)
+- [Model Architecture Design](#model-architecture-design)
+- [Dataset](#dataset)
+- [Dataset Implementation](#dataset-implementation)
+- [Building the Training Environment](#building-the-training-environment)
+- [Running Training (Based on Docker)](#running-training-based-on-docker)
+- [Convert to ONNX Format](#convert-to-onnx-format)
+- [Dataset Submission](#dataset-submission)
+- [Frequently Asked Questions (FAQs)](#frequently-asked-questions-faqs)
+- [Citation](#citation)
+
+---
+
+## Quick Start
+
+### Installation
+
+Currently, we do not provide an installation package on Pypi. If you want to use this project, you can clone it directly from GitHub and then install the required dependencies. Before installing, please ensure that you have already installed [DocsaidKit](https://github.com/DocsaidLab/DocsaidKit).
+
+If you have already installed DocsaidKit, please follow the steps below:
+
+1. Clone the Project:
+
+   ```bash
+   git clone https://github.com/DocsaidLab/DocClassifier.git
+   ```
+
+2. Enter the Project Directory:
+
+   ```bash
+   cd DocClassifier
+   ```
+
+3. Create Packaging Files:
+
+   ```bash
+   python setup.py bdist_wheel
+   ```
+
+4. Install the Packaged Files:
+
+   ```bash
+   pip install dist/docclassifier-*-py3-none-any.whl
+   ```
+
+By following these steps, you should be able to successfully complete the installation of DocClassifier.
+
+Once the installation is complete, you can start using the project.
+
+---
+
+### Importing Necessary Dependencies
+
+We provide a simple model inference interface that includes the logic for preprocessing and postprocessing.
+
+First, you need to import the required dependencies and create the DocClassifier class.
+
+```python
+import docsaidkit as D
+from docsaidkit import Backend
+from docclassifier import DocClassifier
+```
+
+### DocBank
+
+In the inference folder directory, there is a `docbank` folder containing all the registered data. You can place your registration data in it. During inference, specifying the `docbank`, DocClassifier will automatically read all the data in the folder.
+
+If you want to use your own dataset, when creating DocClassifier, please specify the `docbank_root` parameter and set it as your dataset root directory. We recommend that your data uses full-page images and minimizes background interference to enhance the stability of the model.
+
+### ModelType
+
+`ModelType` is an enumeration type used to specify the model type used by DocClassifier. It includes the following options:
+
+- `margin_based`: Uses a model architecture based on the margin method.
+
+There may be more model types in the future, and we will update here.
+
+### Backend
+
+`Backend` is an enumeration type used to specify the computational backend of DocClassifier. It includes the following options:
+
+- `cpu`: Uses CPU for computation.
+- `cuda`: Uses GPU for computation (requires appropriate hardware support).
+
+ONNXRuntime supports a wide range of backends, including CPU, CUDA, OpenCL, DirectX, TensorRT, etc. If you have other requirements, you can refer to [**ONNXRuntime Execution Providers**](https://onnxruntime.ai/docs/execution-providers/index.html) and modify it to the corresponding backend accordingly.
+
+### Creating a DocClassifier Instance
+
+```python
+model = DocClassifier(
+    gpu_id=0,  # GPU ID, set to -1 if not using GPU
+    backend=Backend.cpu,  # Choose the computation backend, can be Backend.cpu or Backend.cuda
+    threshold=0.5,  # Threshold for model prediction, each model has a default value, no need to set if not adjusting
+    docbank_root='path/to/your/docbank',  # Root directory for the registration data, default is docbank
+)
+```
+
+Notes:
+
+- Using CUDA for computation requires not only appropriate hardware support but also the installation of the corresponding CUDA drivers and CUDA Toolkit. If your system does not have CUDA installed, or if the installed version is incorrect, the CUDA computation backend cannot be used.
+
+- For issues related to ONNXRuntime installation dependencies, please refer to [ONNXRuntime Release Notes](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements).
+
+### Reading and Processing Images
+
+```python
+# Reading the image
+img = D.imread('path/to/your/image.jpg')
+
+# Using the model for inference
+# Here, most_similar is the most similar category, max_score is the highest score
+most_similar, max_score = model(img)
+```
+
+### Output Results
+
+The inference result you get is based on the registered dataset within the module. The model will find the most similar category from it and output the label and score of the category.
+
+```python
+import docsaidkit as D
+from docclassifier import DocClassifier
+
+model = DocClassifier(backend=D.Backend.cpu)
+img = D.imread('docs/test_driver.jpg')
+most_similar, max_score = model(img)
+print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
+# >>> most_similar: Taiwanese Driver's License Front, max_score: 0.7334
+```
+
+- **most_similar: Taiwanese Driver's License Front, max_score: 0.7334**
+
+    <div>
+        <img src="./docs/test_driver.jpg" width="300">
+    </div>
+
+---
+
+## Benchmark
 
 We have an internal test dataset, but due to privacy protection, we cannot make this dataset open source. We can only provide evaluation results based on this dataset.
 
@@ -85,7 +229,7 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
     </div>
 ---
 
-## Before Starting Model Training
+## Before We start Training
 
 Based on the model we provide, we believe it can solve most application scenarios. However, we also understand that some scenarios may require enhanced model performance, necessitating the collection of specific datasets and model fine-tuning. We empathize that you may have the budget but not the time to customize adjustments to your specific environment. Therefore, you can contact us directly for consultation. Depending on the complexity of your project, we can arrange for engineers to develop custom solutions.
 
@@ -173,7 +317,7 @@ Reference: [ArcFace: Additive Angular Margin Loss for Deep Face Recognition](htt
 
 ---
 
-## Dataset Introduction and Preprocessing
+## Dataset
 
 Most of the text images are sourced from internet searches.
 
@@ -363,7 +507,7 @@ Here is our default [Dockerfile](./docker/Dockerfile), specifically designed for
 
 ---
 
-## Executing Training (Based on Docker)
+## Running Training (Based on Docker)
 
 Here's how you can use your pre-built Docker image to run document classification training.
 
@@ -427,7 +571,7 @@ Let me know if you need any more assistance!
 
 ---
 
-## Converting the Model to ONNX Format (Based on Docker)
+## Convert to ONNX Format
 
 This section describes how to convert your model to the ONNX format.
 

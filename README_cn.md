@@ -26,6 +26,22 @@ DocClassifier 是一個創新的文件圖像分類系統，它的設計靈感源
 
 ## 目錄
 
+- [介紹](#介紹)
+- [目錄](#目錄)
+- [快速開始](#快速開始)
+- [評估模型（Benchmark）](#評估模型benchmark)
+- [開始訓練模型之前](#開始訓練模型之前)
+- [訓練模型](#訓練模型)
+- [模型架構設計](#模型架構設計)
+- [資料集介紹及預處理](#資料集介紹及預處理)
+- [資料集實作](#資料集實作)
+- [構建訓練環境](#構建訓練環境)
+- [執行訓練（Based on Docker）](#執行訓練based-on-docker)
+- [轉換模型為 ONNX 格式（Based on Docker）](#轉換模型為-onnx-格式based-on-docker)
+- [提交資料集](#提交資料集)
+- [常見問題（FAQs）](#常見問題faqs)
+- [引用](#引用)
+
 ---
 
 ## 快速開始
@@ -79,6 +95,20 @@ from docsaidkit import Backend
 from docclassifier import DocClassifier
 ```
 
+### DocBank
+
+在推論的資料夾目錄中，有一個 `docbank` 資料夾，裡面包含了所有的註冊資料，您可以在其中放置您的註冊資料，並且在推論時，指定 `docbank` DocClassifier 會自動讀取資料夾中的所有資料。
+
+如果您要使用自己的資料集，在創建 DocClassifier 時，請指定 `docbank_root` 參數，並且將其設定為您的資料集根目錄。我們建議您的資料使用滿版的圖像，盡量減少背景的干擾，以提高模型的穩定性。
+
+### ModelType
+
+`ModelType` 是一個枚舉類型，用於指定 DocClassifier 使用的模型類型。它包含以下選項：
+
+- `margin_based`：使用基於 margin 方法的模型架構。
+
+未來可能會有更多的模型類型，我們會在此處更新。
+
 ### Backend
 
 `Backend` 是一個枚舉類型，用於指定 DocClassifier 的運算後端。它包含以下選項：
@@ -94,6 +124,8 @@ ONNXRuntime 支援了非常多的後端，包括 CPU、CUDA、OpenCL、DirectX�
 model = DocClassifier(
     gpu_id=0,  # GPU 編號，如果不使用 GPU 請設為 -1
     backend=Backend.cpu,  # 選擇運算後端，可以是 Backend.cpu 或 Backend.cuda
+    threshold=0.5,  # 模型預測的閾值，每個模型都有預設值，如果不需要調整，可以不用設定
+    docbank_root='path/to/your/docbank',  # 註冊資料的根目錄，預設為 docbank
 )
 ```
 
@@ -109,11 +141,9 @@ model = DocClassifier(
 # 讀取圖像
 img = D.imread('path/to/your/image.jpg')
 
-# 您也可以使用我們提供的測試圖像
-# img = D.imread('docs/run_test_card.jpg')
-
 # 使用模型進行推論
-result = model(img) # result 是一個 Document 類型
+# 其中，most_similar 是最相似的類別，max_score 是最相似的分數
+most_similar, max_score = model(img)
 ```
 
 ### 輸出結果
@@ -124,14 +154,18 @@ result = model(img) # result 是一個 Document 類型
 import docsaidkit as D
 from docclassifier import DocClassifier
 
-model = DocClassifier(D.Backend.cpu)
-img = D.imread('docs/run_test_card.jpg')
-result = model(img)
+model = DocClassifier(backend=D.Backend.cpu)
+img = D.imread('docs/test_driver.jpg')
+most_similar, max_score = model(img)
+print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
+# >>> most_similar: 台灣駕照正面, max_score: 0.7334
 ```
 
-<div align="center">
-    <img src="./docs/result.jpg" width="800">
-</div>
+- **most_similar: 台灣駕照正面, max_score: 0.7334**
+
+    <div>
+        <img src="./docs/test_driver.jpg" width="300">
+    </div>
 
 ---
 
