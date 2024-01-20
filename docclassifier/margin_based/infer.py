@@ -36,13 +36,13 @@ class Inference:
     configs = {
         'lcnet050_arcface': {
             'model_path': 'lcnet050_arcface_fp32.onnx',
-            'file_id': '',
+            'file_id': '1eBQTR5Hn1tKJ6mp-pxo6kJY4PIWojYoo',
             'img_size_infer': (96, 96),
             'threshold': 0.7021  # FPR=0.01
         },
         'lcnet050_cosface': {
             'model_path': 'lcnet050_cosface_fp32.onnx',
-            'file_id': '',
+            'file_id': '1SsYoFiM0C0wPHKAe3XDcgxaYNsPFFqfA',
             'img_size_infer': (96, 96),
             'threshold': 0.6765  # FPR=0.01
         },

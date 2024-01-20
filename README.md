@@ -6,6 +6,7 @@
     <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
     <a href="https://github.com/DocsaidLab/DocClassifier/releases"><img src="https://img.shields.io/github/v/release/DocsaidLab/DocClassifier?color=ffa"></a>
     <a href=""><img src="https://img.shields.io/badge/python-3.8+-aff.svg"></a>
+    <a href="https://doi.org/10.5281/zenodo.10538356"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.10538356.svg" alt="DOI"></a>
 </p>
 
 ## Introduction
