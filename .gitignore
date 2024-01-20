@@ -164,6 +164,9 @@ data/證件母圖/
 docs_benchmark_dataset/
 register/
 private/
+ckpt/
+*.pt
 
 lcnet050_cosface_96/
 
+lcnet050_arcface_96/
