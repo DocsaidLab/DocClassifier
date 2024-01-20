@@ -176,19 +176,24 @@ result = model(img)
 
 | Models | AUROC |
 | :---: | :---: |
-| LC080-96-CosFace (Ours) |  0.9963 |
+| LC050-96-ArcFace (Ours) |  0.9936 |
+| LC050-96-CosFace (Ours) |  0.9934 |
 
 </div>
 
-<div align="center">
-    <img src="./docs/roc_curve.png" width="300">
-</div>
+---
 
-
-- **PCA of features**
+- **ArcFace results**
 
     <div align="center">
-        <img src="./docs/pca_of_features.jpg" width="600">
+        <img src="./docs/arcface_result.jpg" width="800">
+    </div>
+
+
+- **CosFace results**
+
+    <div align="center">
+        <img src="./docs/cosface_result.jpg" width="800">
     </div>
 
 ---
@@ -235,7 +240,15 @@ result = model(img)
 
 ## 模型架構設計
 
-### CosFace 模型
+### Margin Loss 模型
+
+<div align="center">
+    <img src="./docs/margin_loss.jpg" width="800">
+</div>
+
+參考文獻：[ArcFace: Additive Angular Margin Loss for Deep Face Recognition](https://arxiv.org/pdf/1801.07698.pdf)
+
+---
 
 - **Backbone: LCNet**
 
@@ -249,9 +262,9 @@ result = model(img)
 
     在這個模型中，使用的是一個簡單的線性層，將輸入的特徵向量轉換成輸出類別的概率分佈。和一般線性分類不同之處在於，我們在後續會使用 CosFace 或 ArcFace 等度量學習用的損失函數，因此在輸出的特徵會進行套用 normalize 函數，以符合後續的計算。
 
-- **Loss: CosFace**
+- **Loss: Margin Loss**
 
-    CosFace，也稱為大餘弦損失，是用於臉部辨識任務的深度學習中的損失函數。 其設計原理著重於透過優化類間和類內距離來增強特徵空間中類別之間的可區分性，以提高學習到的特徵的判別力。
+    CosFace 是用於臉部辨識任務的深度學習中的損失函數。其設計原理著重於透過優化類間和類內距離來增強特徵空間中類別之間的可區分性，以提高學習到的特徵的判別力。
 
     CosFace 主要依賴餘弦相似度，而不是傳統的歐氏距離。 餘弦相似度在處理高維度特徵方面更有效，因為它關注向量之間的角度差異而不是它們的大小。CosFace 對特徵向量進行歸一化，使每個特徵向量的長度為 1。這種歸一化確保模型關注特徵的方向，即角度差異，而不是特徵向量的絕對大小。在計算類別之間的餘弦相似度時引入了額外的裕度。這個邊距的目的是在餘弦空間中推開不同類別的特徵，使同一類別的特徵更加緊密地聚集，而不同類別的特徵更加分散。
 
@@ -264,6 +277,14 @@ result = model(img)
       這裡，$`\theta_{y_i}`$ 和 $`\theta_j`$ 分別是 $`x_i`$ 和 $`W_{y_i}`$ 之間的角度，以及 $`x_i`$ 和其他類權重向量之間的角度。 $`s`$ 是控制決策邊界陡度的縮放參數。
 
     CosFace 透過引入類間裕度並優化特徵空間中的類內緊湊性，有效增強了臉部辨識任務的表現。它關注特徵向量的方向，而不是它們的大小，使模型更擅長學習區分不同類別的特徵。
+
+    另一方面，ArcFace 提出了一種稱為加性角邊緣損失的方法。ArcFace 的設計理念與 CosFace 相似，但它在計算過程中引入的裕度略有不同。ArcFace 直接在角度空間中添加邊緣，而不是在餘弦函數中。這種方法增加了特徵空間的幾何間隔，進一步促進了類別間特徵的分離和類內特徵的聚合。具體來說，ArcFace 調整了特徵向量與其對應類別權重向量之間角度的計算方式，從而有效提高了識別準確性。
+
+    在數學上，ArcFace 的損失函數可以表達為：
+
+    $` L = -\frac{1}{N}\sum_{i=1}^{N}\log\frac{e^{s(\cos(\theta_{y_i} + m))}}{e^{s(\cos(\theta_{y_i} + m))} + \sum_{j \neq y_i}e^{s\cos(\theta_j)}} `$
+
+    這裡，$`\theta_{y_i}`$ 和 $`\theta_j`$ 分別是 $`x_i`$ 和 $`W_{y_i}`$ 之間的角度，以及 $`x_i`$ 和其他類權重向量之間的角度。$`s`$ 是控制決策邊界陡度的縮放參數。
 
 ---
 

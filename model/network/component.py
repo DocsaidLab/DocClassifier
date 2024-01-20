@@ -41,9 +41,9 @@ class FeatureLearningHead(nn.Module):
         self.embed_features = nn.Sequential(
             GAP(),
             nn.Linear(in_dim, embed_dim),
-            nn.BatchNorm1d(embed_dim),
-            nn.Linear(embed_dim, embed_dim, bias=False),
-            nn.BatchNorm1d(embed_dim),
+            nn.LayerNorm(embed_dim),
+            nn.Linear(embed_dim, embed_dim),
+            nn.LayerNorm(embed_dim),
         )
 
     def forward(self, xs: List[torch.Tensor]) -> torch.Tensor:

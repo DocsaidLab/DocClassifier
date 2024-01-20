@@ -64,21 +64,25 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 | Models | AUROC |
 | :---: | :---: |
-| LC080-96-CosFace (Ours) |  0.9963 |
+| LC050-96-ArcFace (Ours) |  0.9936 |
+| LC050-96-CosFace (Ours) |  0.9934 |
 
 </div>
 
-<div align="center">
-    <img src="./docs/roc_curve.png" width="300">
-</div>
+---
 
-
-- **PCA of features**
+- **ArcFace results**
 
     <div align="center">
-        <img src="./docs/pca_of_features.jpg" width="600">
+        <img src="./docs/arcface_result.jpg" width="800">
     </div>
 
+
+- **CosFace results**
+
+    <div align="center">
+        <img src="./docs/cosface_result.jpg" width="800">
+    </div>
 ---
 
 ## Before Starting Model Training
@@ -121,7 +125,15 @@ Let's now break down the training process step-by-step.
 
 ## Model Architecture Design
 
-### CosFace Model
+### Margin Loss Model
+
+<div align="center">
+    <img src="./docs/margin_loss.jpg" width="800">
+</div>
+
+Reference: [ArcFace: Additive Angular Margin Loss for Deep Face Recognition](https://arxiv.org/pdf/1801.07698.pdf)
+
+---
 
 - **Backbone: LCNet**
 
@@ -135,21 +147,29 @@ Let's now break down the training process step-by-step.
 
     In this model, a simple linear layer is used. This layer transforms the input feature vector into a probability distribution of output classes. Unlike typical linear classification, we will use loss functions designed for metric learning, such as CosFace or ArcFace, later in the process. Therefore, the output features are applied with a normalize function to fit subsequent calculations.
 
-- **Loss: CosFace**
+- **Loss: Margin Loss**
 
-    CosFace, also known as Large Margin Cosine Loss, is a loss function used in deep learning for face recognition tasks. Its design principle focuses on enhancing the distinguishability between classes in the feature space by optimizing inter-class and intra-class distances, thereby improving the discriminative power of the learned features.
+    CosFace is a loss function used in deep learning for face recognition tasks. Its design principle focuses on optimizing inter-class and intra-class distances to enhance the distinguishability between categories in the feature space, thereby improving the discriminative power of the learned features.
 
-    CosFace relies primarily on cosine similarity, rather than traditional Euclidean distance. Cosine similarity is more effective in handling high-dimensional features as it focuses on the angular difference between vectors rather than their magnitude. CosFace normalizes feature vectors so that each has a length of 1. This normalization ensures that the model focuses on the direction of features, i.e., angular differences, rather than the absolute size of the feature vectors. An additional margin is introduced when computing the cosine similarity between classes. The purpose of this margin is to push apart features of different classes in the cosine space, making features of the same class more closely clustered while dispersing features of different classes.
+    CosFace primarily relies on cosine similarity rather than traditional Euclidean distance. Cosine similarity is more effective in handling high-dimensional features as it focuses on the angular difference between vectors, not their magnitude. CosFace normalizes the feature vectors, making the length of each feature vector equal to 1. This normalization ensures that the model focuses on the direction of features, i.e., the angular difference, rather than the absolute size of the feature vectors. An additional margin is introduced when calculating the cosine similarity between classes. The purpose of this margin is to push apart the features of different classes in the cosine space, making the features of the same class more closely clustered, while those of different classes are more dispersed.
 
-    - Mathematical Expression:
+    - **Mathematical Expression:**
 
-      Let $`x_i`$ be the normalized feature vector and $`y_i`$ its corresponding class label, and $`W_{y_i}`$ the normalized weight vector associated with class $`y_i`$. CosFace is based on the cosine similarity between $`x_i`$ and $`W_{y_i}`$, then introduces a margin $`m`$:
+        Let $`x_i`$ be a normalized feature vector, $`y_i`$ its corresponding class label, and $`W_{y_i}`$ the normalized weight vector associated with class $`y_i`$. CosFace is based on the cosine similarity between $`x_i`$ and $`W_{y_i}`$, with a margin $`m`$ introduced:
 
-      $` L = -\frac{1}{N}\sum_{i=1}^{N}\log\frac{e^{s(\cos(\theta_{y_i}) - m)}}{e^{s(\cos(\theta_{y_i}) - m)} + \sum_{j \neq y_i}e^{s\cos(\theta_j)}} `$
+        $` L = -\frac{1}{N}\sum_{i=1}^{N}\log\frac{e^{s(\cos(\theta_{y_i}) - m)}}{e ^{s(\cos(\theta_{y_i}) - m)} + \sum_{j \neq y_i}e^{s\cos(\theta_j)}} `$
 
-      Here, $`\theta_{y_i}`$ and $`\theta_j`$ are the angles between $`x_i`$ and $`W_{y_i}`$, and between $`x_i`$ and the weight vectors of other classes, respectively. $`s`$ is a scaling parameter that controls the steepness of the decision boundary.
+        Here, $`\theta_{y_i}`$ and $`\theta_j`$ are the angles between $`x_i`$ and $`W_{y_i}`$, and between $`x_i`$ and other class weight vectors, respectively. $`s`$ is a scaling parameter that controls the steepness of the decision boundary.
 
-    CosFace enhances the performance of face recognition tasks by introducing inter-class margins and optimizing intra-class compactness in the feature space. It focuses on the direction of feature vectors, rather than their magnitude, enabling the model to better learn features that distinguish between different classes.
+    CosFace enhances the performance of face recognition tasks by introducing an inter-class margin and optimizing the intra-class compactness in the feature space. It focuses on the direction of feature vectors, rather than their size, making the model more adept at learning features that differentiate between categories.
+
+    On the other hand, ArcFace proposes a method called Additive Angular Margin Loss. The design concept of ArcFace is similar to that of CosFace, but the margin introduced in the calculation process is slightly different. ArcFace adds the margin directly in the angular space, rather than in the cosine function. This approach increases the geometric margin in the feature space, further promoting the separation of features between classes and the aggregation of features within classes. Specifically, ArcFace adjusts the way the angle between feature vectors and their corresponding class weight vectors is calculated, thereby effectively improving identification accuracy.
+
+    Mathematically, the loss function of ArcFace can be expressed as:
+
+    $` L = -\frac{1}{N}\sum_{i=1}^{N}\log\frac{e^{s(\cos(\theta_{y_i} + m))}}{e^{s(\cos(\theta_{y_i} + m))} + \sum_{j \neq y_i}e^{s\cos(\theta_j)}} `$
+
+    Here, $`\theta_{y_i}`$ and $`\theta_j`$ are the angles between $`x_i`$ and $`W_{y_i}`$, and between $`x_i`$ and other class weight vectors, respectively. $`s`$ is a scaling parameter that controls the steepness of the decision boundary.
 
 ---
 
