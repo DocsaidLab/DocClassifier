@@ -690,7 +690,7 @@ If you need more help, please contact us via email: **docsaidlab@gmail.com**
 If you find our work helpful, please cite the following related papers:
 
 ```bibtex
-@misc{lin2023docclassifier,
+@misc{lin2024docclassifier,
   author = {Kun-Hsiang Lin, Ze Yuan},
   title = {DocClassifier},
   year = {2024},

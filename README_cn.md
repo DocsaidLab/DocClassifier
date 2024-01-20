@@ -697,7 +697,7 @@ bash DocClassifier/docker/to_onnx.bash lcnet050_cosface_96 # 這裡替換成您�
 如果您認為我們的工作對您有幫助，請引用以下相關論文：
 
 ```bibtex
-@misc{lin2023docclassifier,
+@misc{lin2024docclassifier,
   author = {Kun-Hsiang Lin, Ze Yuan},
   title = {DocClassifier},
   year = {2024},
