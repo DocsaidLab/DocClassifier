@@ -220,16 +220,33 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **ArcFace results**
 
-    <div align="center">
-        <img src="./docs/arcface_result.jpg" width="800">
-    </div>
+    - **TPR @ FPR = 0.01: 0.93**
 
+        | FPR       | 0.0001  | 0.001   | 0.01    | 0.1     | 1       |
+        |-----------|---------|---------|---------|---------|---------|
+        | TPR       | 0.715   | 0.824   | 0.930   | 0.986   | 1.0     |
+        | Threshold | 0.78215 | 0.75211 | 0.70207 | 0.62389 | 0.21707 |
+
+    - **ROC Curve & PCA**
+
+        <div align="center">
+            <img src="./docs/arcface_result.jpg" width="800">
+        </div>
 
 - **CosFace results**
 
-    <div align="center">
-        <img src="./docs/cosface_result.jpg" width="800">
-    </div>
+    - **TPR @ FPR = 0.01: 0.929**
+
+        | FPR       | 0.0001  | 0.001  | 0.01   | 0.1    | 1      |
+        |-----------|---------|--------|--------|--------|--------|
+        | TPR       | 0.653   | 0.829  | 0.929  | 0.985  | 1.0    |
+        | Threshold | 0.77127 | 0.7245 | 0.67652| 0.60453| 0.24588|
+
+    - **ROC Curve & PCA**
+
+        <div align="center">
+            <img src="./docs/cosface_result.jpg" width="800">
+        </div>
 
 ---
 
@@ -703,7 +720,7 @@ bash DocClassifier/docker/to_onnx.bash lcnet050_cosface_96 # 這裡替換成您�
   year = {2024},
   publisher = {GitHub},
   journal = {GitHub repository},
-  doi = {},
+  doi = {10.5281/zenodo.10538356},
   howpublished = {\url{https://github.com/DocsaidLab/DocClassifier}}
 }
 

@@ -218,16 +218,34 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 - **ArcFace results**
 
-    <div align="center">
-        <img src="./docs/arcface_result.jpg" width="800">
-    </div>
+    - **TPR @ FPR = 0.01: 0.93**
 
+        | FPR       | 0.0001  | 0.001   | 0.01    | 0.1     | 1       |
+        |-----------|---------|---------|---------|---------|---------|
+        | TPR       | 0.715   | 0.824   | 0.930   | 0.986   | 1.0     |
+        | Threshold | 0.78215 | 0.75211 | 0.70207 | 0.62389 | 0.21707 |
+
+    - **ROC Curve & PCA**
+
+        <div align="center">
+            <img src="./docs/arcface_result.jpg" width="800">
+        </div>
 
 - **CosFace results**
 
-    <div align="center">
-        <img src="./docs/cosface_result.jpg" width="800">
-    </div>
+    - **TPR @ FPR = 0.01: 0.929**
+
+        | FPR       | 0.0001  | 0.001  | 0.01   | 0.1    | 1      |
+        |-----------|---------|--------|--------|--------|--------|
+        | TPR       | 0.653   | 0.829  | 0.929  | 0.985  | 1.0    |
+        | Threshold | 0.77127 | 0.7245 | 0.67652| 0.60453| 0.24588|
+
+    - **ROC Curve & PCA**
+
+        <div align="center">
+            <img src="./docs/cosface_result.jpg" width="800">
+        </div>
+
 ---
 
 ## Before We start Training
@@ -238,13 +256,13 @@ A concrete example is:
 
 Suppose you need to identify a unique text pattern that our current model cannot effectively recognize and classify. In this case, you can reach out to us and provide some of the data you have collected. We can then tailor the model specifically to fit your dataset. This approach can significantly enhance the model's performance but requires considerable time and manpower. Accordingly, we will offer a reasonable quote based on your needs.
 
-Alternatively, if you are not in a hurry, **you can provide us with your text dataset directly**. We will incorporate it into our test dataset in a future version of the model (without a specific time frame). This future version will offer enhanced model performance, and opting for this approach is completely free for you.
+Alternatively, if you are not in a hurry, **you can provide us with your dataset directly**. We will incorporate it into our test dataset in a future version of the model (without a specific time frame). This future version will offer enhanced model performance, and opting for this approach is completely free for you.
 
 - **Please note: We will never make your data open source unless you request it. Normally, the data will only be used for model updates.**
 
 We would be delighted if you choose the second option, as it helps us improve our model and benefits more users.
 
-For information on how to submit your dataset, please refer to: [**Submitting a Dataset**](#提交資料集).
+For information on how to submit your dataset, please refer to: [**Submitting a Dataset**](#dataset-submission).
 
 Contact us at: **docsaidlab@gmail.com**
 
@@ -696,7 +714,7 @@ If you find our work helpful, please cite the following related papers:
   year = {2024},
   publisher = {GitHub},
   journal = {GitHub repository},
-  doi = {},
+  doi = {10.5281/zenodo.10538356},
   howpublished = {\url{https://github.com/DocsaidLab/DocClassifier}}
 }
 
