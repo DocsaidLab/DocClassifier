@@ -95,11 +95,23 @@ from docsaidkit import Backend
 from docclassifier import DocClassifier
 ```
 
-### DocBank
+### Register
 
-In the inference folder directory, there is a `register` folder containing all the registered data. You can place your registration data in it. During inference, specifying the `register`, DocClassifier will automatically read all the data in the folder.
+In the inference folder directory, there is a `register` folder that contains all the registration data. You can place your registration data in it, and during inference, specifying `register` will prompt the DocClassifier to automatically read all the data in the folder.
 
-If you want to use your own dataset, when creating DocClassifier, please specify the `register_root` parameter and set it as your dataset root directory. We recommend that your data uses full-page images and minimizes background interference to enhance the stability of the model.
+If you wish to use your own dataset, when creating the `DocClassifier`, please specify the `register_root` parameter and set it as the root directory of your dataset. We recommend using full-page images for your data to minimize background interference, thereby enhancing the stability of the model.
+
+We have pre-loaded some document image registration data in the module for your reference. You can look at these and expand on them as needed.
+
+<div align="center">
+    <img src="./docs/register_demo.jpg" width="600">
+</div>
+
+---
+
+**Special Note: If you register the same image multiple times, it will definitely corrupt the model. Therefore, take your registration data seriously and ensure they are correct.**
+
+---
 
 ### ModelType
 
@@ -118,7 +130,7 @@ There may be more model types in the future, and we will update here.
 
 ONNXRuntime supports a wide range of backends, including CPU, CUDA, OpenCL, DirectX, TensorRT, etc. If you have other requirements, you can refer to [**ONNXRuntime Execution Providers**](https://onnxruntime.ai/docs/execution-providers/index.html) and modify it to the corresponding backend accordingly.
 
-### Creating a DocClassifier Instance
+### Creating a `DocClassifier` Instance
 
 ```python
 model = DocClassifier(
@@ -211,33 +223,36 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 ### Evaluation Results
 
-- **Backbone:** LCNet-050
-- **Number of Classes:** 394,080
-- **TPR @ FPR** = 1e-4
+- Number of Classes: 394,080
 
-    <div align="left">
+<div align="center">
 
-    | - | TPR@FPR | ROC | Norm | Feats | Res | Loss | FLOPs (G) | Size (MB) | Conn | Pretrain |
-    | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-    | 1 | 0.653 | 0.9820 | LN | 128 |  96 | CosFace | 0.029 | 2.33 | Flatten | Yes |
-    | 2 | 0.708 | 0.9850 | LN | 512 | 128 | CosFace | 0.051 | 2.67 | GAP | Yes |
-    | 3 | 0.921 | 0.9975 | LN | 256 | 128 | CosFace | 0.052 | 2.46 | Squeeze | Yes |
-    | 4 | 0.926 | 0.9982 | LN | 256 | 128 | CosFace | 0.053 | 5.54 | Flatten | Yes |
-    | 5 | 0.712 | 0.9806 | BN | 256 | 128 | CosFace | 0.053 | 5.54 | Flatten | Yes |
-    | 6 | 0.189 | 0.8505 | BN | 256 | 128 | CosFace | 0.053 | 5.54 | Flatten | No |
+| Name | TPR@FPR=1e-4 | ROC | FLOPs (G) | Size (MB) |
+| --- | :---: | :---: | :---: | :---: |
+| lcnet050-f128-r96-ln-cos-flat | 0.653 | 0.9820 | 0.029 | 2.33 |
+| lcnet050-f512-r128-ln-cos-gap | 0.708 | 0.9850 | 0.051 | 2.67 |
+| lcnet050-f256-r128-ln-cos-flat | 0.926 | 0.9982 | 0.053 | 5.54 |
+| lcnet050-f256-r128-bn-cos-flat | 0.712 | 0.9809 | 0.053 | 5.54 |
+| lcnet050-f256-r128-bn-cos-flat-from-scratch | 0.851 | 0.1886 | 0.053 | 5.54 |
+| lcnet050-f256-r128-ln-cos-squeeze | 0.921 | **0.9974** | 0.052 | 2.46 |
+| **lcnet050-f256-r128-ln-arc-squeeze** | **0.924** | 0.9970 | 0.052 | 2.46 |
 
-    </div>
+</div>
 
 ---
 
-- **ArcFace results**
+- **lcnet050-f256-r128-ln-arc-squeeze results**
 
-    - **TPR @ FPR = 0.01: 0.93**
+    - **TPR @ FPR = 0.0001: 0.924**
 
-        | FPR       | 0.0001  | 0.001   | 0.01    | 0.1     | 1       |
-        |-----------|---------|---------|---------|---------|---------|
-        | TPR       | 0.715   | 0.824   | 0.930   | 0.986   | 1.0     |
-        | Threshold | 0.78215 | 0.75211 | 0.70207 | 0.62389 | 0.21707 |
+        <div align="center">
+
+        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
+        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+        |    TPR    |  0.867  |  0.924  |  0.957  |  0.981  |  0.994  |   1.0   |
+        | Threshold |  0.711  |  0.685  |  0.662  |  0.632  |  0.588  |  0.373  |
+
+        </div>
 
     - **ROC Curve & PCA**
 
@@ -245,14 +260,18 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
             <img src="./docs/arcface_result.jpg" width="800">
         </div>
 
-- **CosFace results**
+- **lcnet050-f256-r128-ln-cos-squeeze Results**
 
-    - **TPR @ FPR = 0.01: 0.929**
+    - **TPR @ FPR = 0.0001: 0.921**
 
-        | FPR       | 0.0001  | 0.001  | 0.01   | 0.1    | 1      |
-        |-----------|---------|--------|--------|--------|--------|
-        | TPR       | 0.653   | 0.829  | 0.929  | 0.985  | 1.0    |
-        | Threshold | 0.77127 | 0.7245 | 0.67652| 0.60453| 0.24588|
+        <div align="center">
+
+        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
+        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+        |    TPR    |  0.836  |  0.921  |  0.956  |  0.981  |  0.994  |   1.0   |
+        | Threshold |  0.698  |  0.667  |  0.645  |  0.616  |  0.575  |  0.361  |
+
+        </div>
 
     - **ROC Curve & PCA**
 
@@ -268,7 +287,7 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 - Our benchmark dataset, being the client's private data, cannot be disclosed in any form or manner. However, we can have some objective discussion — this validation data is overly simplistic. Compared to the commonly used IJB-C evaluation protocol in face recognition, we believe the difficulty level of this dataset is far from sufficient. Therefore, in future versions, we will try to find more challenging ways to ensure a more objective effectiveness of the model.
 
-- The performance difference between models trained with ArcFace and CosFace is negligible, and either could be used. However, we prefer the sense of mystery (perhaps?) that ArcFace offers, so we chose it as our default model.
+- We observed overfitting in the later stages of training on CosFace, which led to less stable performance on the test set compared to ArcFace. We believe this is due to ArcFace's theoretical foundation, which provides greater stability in feature generation. Therefore, we ultimately chose ArcFace as our default model architecture.
 
 - Pretrain is necessary. We tried not to use Pretrain, but the effect was very poor. The reason may be that the diversity of the data set we provided is still not enough, so we need to use Pretrain to help the model learn more features. We thank the models provided by timm again, which saved us a lot of time and manpower.
 

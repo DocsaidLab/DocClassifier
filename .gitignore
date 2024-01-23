@@ -170,3 +170,5 @@ ckpt/
 *cache*
 
 lcnet050_cosface_f256_r128_squeeze/
+
+lcnet050_arcface_f256_r128_squeeze/

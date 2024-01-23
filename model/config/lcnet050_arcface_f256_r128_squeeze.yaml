@@ -34,7 +34,7 @@ model:
       embed_dim: 256
       feature_map_size: 4
   loss:
-    name: CosFace
+    name: ArcFace
     options:
       s: 64
       m: 0.4

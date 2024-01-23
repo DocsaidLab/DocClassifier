@@ -96,11 +96,23 @@ from docsaidkit import Backend
 from docclassifier import DocClassifier
 ```
 
-### DocBank
+### Register
 
-在推論的資料夾目錄中，有一個 `register` 資料夾，裡面包含了所有的註冊資料，您可以在其中放置您的註冊資料，並且在推論時，指定 `register` DocClassifier 會自動讀取資料夾中的所有資料。
+在推論的資料夾目錄中，有一個 `register` 資料夾，裡面包含了所有的註冊資料，您可以在其中放置您的註冊資料，在推論時 `DocClassifier` 會自動讀取資料夾中的所有資料。
 
-如果您要使用自己的資料集，在創建 DocClassifier 時，請指定 `register_root` 參數，並且將其設定為您的資料集根目錄。我們建議您的資料使用滿版的圖像，盡量減少背景的干擾，以提高模型的穩定性。
+如果您要使用自己的資料集，在創建 `DocClassifier` 時，請指定 `register_root` 參數，並且將其設定為您的資料集根目錄。我們建議您的資料使用滿版的圖像，盡量減少背景的干擾，以提高模型的穩定性。
+
+我們在模組內預設放了幾個文件圖像的註冊資料，您可以參考這些資料，並且自行擴充。
+
+<div  align="center">
+    <img src="./docs/register_demo.jpg" width="600">
+</div>
+
+---
+
+**特別注意：如果您將同一張圖片重複註冊多次，那百分之百會把模型弄壞，因此請認真對待您的註冊資料，確保他們是正確的。**
+
+---
 
 ### ModelType
 
@@ -119,7 +131,7 @@ from docclassifier import DocClassifier
 
 ONNXRuntime 支援了非常多的後端，包括 CPU、CUDA、OpenCL、DirectX、TensorRT 等等，若您有其他需求，可以參考 [**ONNXRuntime Execution Providers**](https://onnxruntime.ai/docs/execution-providers/index.html)，並自行修改成對應的後端。
 
-### 創建 DocClassifier 實例
+### 創建 `DocClassifier` 實例
 
 ```python
 model = DocClassifier(
@@ -213,33 +225,36 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 ### 評估結果
 
-- **Backbone:** LCNet-050
-- **Number of Classes:** 394,080
-- **TPR @ FPR** = 1e-4
+- Number of Classes: 394,080
 
-    <div align="left">
+<div align="center">
 
-    | - | TPR@FPR | ROC | Norm | Feats | Res | Loss | FLOPs (G) | Size (MB) | Conn | Pretrain |
-    | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-    | 1 | 0.653 | 0.9820 | LN | 128 |  96 | CosFace | 0.029 | 2.33 | Flatten | Yes |
-    | 2 | 0.708 | 0.9850 | LN | 512 | 128 | CosFace | 0.051 | 2.67 | GAP | Yes |
-    | 3 | 0.921 | 0.9975 | LN | 256 | 128 | CosFace | 0.052 | 2.46 | Squeeze | Yes |
-    | 4 | 0.926 | 0.9982 | LN | 256 | 128 | CosFace | 0.053 | 5.54 | Flatten | Yes |
-    | 5 | 0.712 | 0.9806 | BN | 256 | 128 | CosFace | 0.053 | 5.54 | Flatten | Yes |
-    | 6 | 0.189 | 0.8505 | BN | 256 | 128 | CosFace | 0.053 | 5.54 | Flatten | No |
+| Name | TPR@FPR=1e-4 | ROC | FLOPs (G) | Size (MB) |
+| --- | :---: | :---: | :---: | :---: |
+| lcnet050-f128-r96-ln-cos-flat | 0.653 | 0.9820 | 0.029 | 2.33 |
+| lcnet050-f512-r128-ln-cos-gap | 0.708 | 0.9850 | 0.051 | 2.67 |
+| lcnet050-f256-r128-ln-cos-flat | 0.926 | 0.9982 | 0.053 | 5.54 |
+| lcnet050-f256-r128-bn-cos-flat | 0.712 | 0.9809 | 0.053 | 5.54 |
+| lcnet050-f256-r128-bn-cos-flat-from-scratch | 0.851 | 0.1886 | 0.053 | 5.54 |
+| lcnet050-f256-r128-ln-cos-squeeze | 0.921 | **0.9974** | 0.052 | 2.46 |
+| **lcnet050-f256-r128-ln-arc-squeeze** | **0.924** | 0.9970 | 0.052 | 2.46 |
 
-    </div>
+</div>
 
 ---
 
-- **ArcFace results**
+- **lcnet050-f256-r128-ln-arc-squeeze results**
 
-    - **TPR @ FPR = 0.01: 0.93**
+    - **TPR @ FPR = 0.0001: 0.924**
 
-        | FPR       | 0.0001  | 0.001   | 0.01    | 0.1     | 1       |
-        |-----------|---------|---------|---------|---------|---------|
-        | TPR       | 0.715   | 0.824   | 0.930   | 0.986   | 1.0     |
-        | Threshold | 0.78215 | 0.75211 | 0.70207 | 0.62389 | 0.21707 |
+        <div align="center">
+
+        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
+        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+        |    TPR    |  0.867  |  0.924  |  0.957  |  0.981  |  0.994  |   1.0   |
+        | Threshold |  0.711  |  0.685  |  0.662  |  0.632  |  0.588  |  0.373  |
+
+        </div>
 
     - **ROC Curve & PCA**
 
@@ -247,14 +262,18 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
             <img src="./docs/arcface_result.jpg" width="800">
         </div>
 
-- **CosFace results**
+- **lcnet050-f256-r128-ln-cos-squeeze Results**
 
-    - **TPR @ FPR = 0.01: 0.929**
+    - **TPR @ FPR = 0.0001: 0.921**
 
-        | FPR       | 0.0001  | 0.001  | 0.01   | 0.1    | 1      |
-        |-----------|---------|--------|--------|--------|--------|
-        | TPR       | 0.653   | 0.829  | 0.929  | 0.985  | 1.0    |
-        | Threshold | 0.77127 | 0.7245 | 0.67652| 0.60453| 0.24588|
+        <div align="center">
+
+        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
+        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+        |    TPR    |  0.836  |  0.921  |  0.956  |  0.981  |  0.994  |   1.0   |
+        | Threshold |  0.698  |  0.667  |  0.645  |  0.616  |  0.575  |  0.361  |
+
+        </div>
 
     - **ROC Curve & PCA**
 
@@ -270,11 +289,11 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - Benchmark 資料集是客戶的隱私資料，我們不得以任何形式或方法公開。但我們可以進行一些客觀的討論 —— 這份驗證資料太過於簡單了。相比於人臉辨識常用的 IJB-C 評估協議，我們認為這份資料集的難度遠遠不夠，因此我們在未來的版本中，會嘗試找到更困難的方式，以確保模型的效果能夠更加客觀。
 
-- ArcFace 和 CosFace 所訓練的模型效果差異不大，用哪個都可以。但我們更喜歡 ArcFace 帶給我們的神秘感（？），因此我們選擇了 ArcFace 作為我們的預設模型。
+- 我們在 CosFace 上觀察到訓練後期過擬合的現象，這導致模型在測試集上的效果不如 ArcFace 穩定。我們認為這是因為 ArcFace 的理論基礎對於特徵生成有更高的穩定度，因此我們最終選擇了 ArcFace 作為我們的預設模型架構。
 
 - Pretrain 是必要的，我們嘗試過不使用 Pretrain，但效果非常差。其中原因可能是因為我們所提供的資料集的多樣性仍然不夠，因此需要使用 Pretrain 來幫助模型學習到更多的特徵。我們再次感謝 timm 所提供的模型，這些模型幫助我們節省了大量的時間和人力。
 
-- 在 Backbone 與 Head 串接的過程中，使用 nn.Flatten 取得所有資訊並使用 nn.Linear 整合到特徵編碼層效果是最好的！但是缺點是需要佔用大量的參數 —— 在輕量模型的場景中，增加 1MB 的模型大小都是一件令人髮指的事情。為此我們嘗試了兩個方向，其一：使用 nn.GlobalAvgPool2d 取得所有資訊並使用 nn.Linear 整合到特徵編碼層；其二：使用 nn.Conv2d 先將通道數降維至原本的 1/4 ，這邊我們稱為 Squeeze，接著再使用 nn.Flatten 搭配 nn.Linear 整合到特徵編碼層。經過實驗，使用 Squeeze 的策略是對的。這個策略不僅能夠有效地減少模型大小，同時維持模型的效能。
+- 在 Backbone 與 Head 串接的過程中，使用 `nn.Flatten` 取得所有資訊並使用 `nn.Linear` 整合到特徵編碼層效果是最好的！但是缺點是需要佔用大量的參數 —— 在輕量模型的場景中，增加 1MB 的模型大小都是一件令人髮指的事情。為此我們嘗試了兩個方向，其一：使用 `nn.GlobalAvgPool2d` 取得所有資訊並使用 `nn.Linear` 整合到特徵編碼層；其二：使用 `nn.Conv2d` 先將通道數降維至原本的 1/4 ，這邊我們稱為 Squeeze，接著再使用 `nn.Flatten` 搭配 `nn.Linear` 整合到特徵編碼層。經過實驗，使用 Squeeze 的策略是對的。這個策略不僅能夠有效地減少模型大小，同時維持模型的效能。
 
 ---
 
