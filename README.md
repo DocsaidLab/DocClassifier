@@ -17,7 +17,7 @@
 
 DocClassifier is an innovative document image classification system, inspired by facial recognition technology and deeply optimized to address the limitations traditional classifiers face when dealing with text images. This system is particularly suited for scenarios that require rapid identification and registration of new text types, such as in fintech, banking, and the sharing economy sectors.
 
-Our system employs advanced feature learning model architectures, combined with innovative loss functions like CosFace and ArcFace, effectively achieving precise classification without the need for presetting a large number of category heads. To train this model, we independently collected about 800 diverse text images and expanded our dataset through image enhancement techniques, ensuring the model learns a rich set of features.
+Our system employs an advanced feature learning model architecture, integrating innovative loss functions like CosFace and ArcFace. This approach effectively enables precise classification without the need for a large number of predefined category heads. To train this model, we independently collected about 800 diverse text images and the indoor dataset for scene classification. We expanded the dataset through image augmentation techniques, culminating in a scale of approximately 400,000 categories. This ensures that the model can learn a rich array of features.
 
 Technically, we have chosen PyTorch as our primary training framework and utilized ONNXRuntime for model inference, ensuring efficient operation of the model on both CPU and GPU. Additionally, we support converting the model into ONNX format for flexible deployment across various platforms. For scenarios requiring model quantization, we offer static quantization functionality based on the ONNXRuntime API, further enhancing the model's application flexibility and performance.
 
@@ -97,9 +97,9 @@ from docclassifier import DocClassifier
 
 ### DocBank
 
-In the inference folder directory, there is a `docbank` folder containing all the registered data. You can place your registration data in it. During inference, specifying the `docbank`, DocClassifier will automatically read all the data in the folder.
+In the inference folder directory, there is a `register` folder containing all the registered data. You can place your registration data in it. During inference, specifying the `register`, DocClassifier will automatically read all the data in the folder.
 
-If you want to use your own dataset, when creating DocClassifier, please specify the `docbank_root` parameter and set it as your dataset root directory. We recommend that your data uses full-page images and minimizes background interference to enhance the stability of the model.
+If you want to use your own dataset, when creating DocClassifier, please specify the `register_root` parameter and set it as your dataset root directory. We recommend that your data uses full-page images and minimizes background interference to enhance the stability of the model.
 
 ### ModelType
 
@@ -125,7 +125,7 @@ model = DocClassifier(
     gpu_id=0,  # GPU ID, set to -1 if not using GPU
     backend=Backend.cpu,  # Choose the computation backend, can be Backend.cpu or Backend.cuda
     threshold=0.5,  # Threshold for model prediction, each model has a default value, no need to set if not adjusting
-    docbank_root='path/to/your/docbank',  # Root directory for the registration data, default is docbank
+    register_root='path/to/your/register',  # Root directory for the registration data, default is register
 )
 ```
 
@@ -207,10 +207,13 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 <div align="center">
 
-| Models | AUROC |
-| :---: | :---: |
-| LC050-96-ArcFace (Ours) |  0.9936 |
-| LC050-96-CosFace (Ours) |  0.9934 |
+| Backbone | AUROC | Number of Categories | Normalization | Pretrain | Features | Resolution | MarginLoss |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| LC050 | 0.9936 | 9,960 | BN | Yes | 128 | 96 | ArcFace |
+| LC050 | 0.9934 | 9,960 | BN | Yes | 128 | 96 | CosFace |
+| LC050 | 0.9982 | 394,080 | LN | Yes | 256 | 128 | CosFace |
+| LC050 | 0.9806 | 394,080 | BN | Yes | 256 | 128 | CosFace |
+| LC050 |  0.8505 | 394,080 | BN | No | 256 | 128 | CosFace |
 
 </div>
 
@@ -245,6 +248,18 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
         <div align="center">
             <img src="./docs/cosface_result.jpg" width="800">
         </div>
+
+### Discussion of Results
+
+- In terms of the variety of text images, we initially used about 500 types, which was later increased to 800, 10,000, and so on. Ultimately, we decided to include the indoor dataset as a base, expanding the overall classification categories to approximately 400,000. Our conclusion here aligns with the task of face recognition: the effectiveness of a model is greatly related to the diversity of the training data. Therefore, we need to use a large dataset to ensure that the model can learn enough features and effectively distinguish between different categories.
+
+- Through experiments, we found that using LayerNorm yielded better results than BatchNorm in the task of text image classification. We believe this is because text images (such as street signs, document images, etc.) usually contain highly variable features like different fonts, sizes, background noise, etc. LayerNorm, by standardizing each sample independently, helps the model handle these variations more effectively. In contrast, in face recognition, using BatchNorm helps the model learn to recognize subtle differences from highly similar facial images. This is crucial for ensuring that the model can effectively recognize facial features under various conditions such as lighting, angles, and facial expressions.
+
+- Our benchmark dataset, being the client's private data, cannot be disclosed in any form or manner. However, we can have some objective discussion — this validation data is overly simplistic. Compared to the commonly used IJB-C evaluation protocol in face recognition, we believe the difficulty level of this dataset is far from sufficient. Therefore, in future versions, we will try to find more challenging ways to ensure a more objective effectiveness of the model.
+
+- The performance difference between models trained with ArcFace and CosFace is negligible, and either could be used. However, we prefer the sense of mystery (perhaps?) that ArcFace offers, so we chose it as our default model.
+
+- Pretrain is necessary. We tried not to use Pretrain, but the effect was very poor. The reason may be that the diversity of the data set we provided is still not enough, so we need to use Pretrain to help the model learn more features. We thank the models provided by timm again, which saved us a lot of time and manpower.
 
 ---
 
@@ -338,54 +353,91 @@ Reference: [ArcFace: Additive Angular Margin Loss for Deep Face Recognition](htt
 
 ## Dataset
 
-Most of the text images are sourced from internet searches.
+The majority of the text and image data were collected through internet searches.
 
-In addition to internet searches, we have collected some text images from the following dataset:
+Apart from internet searches, we have gathered some text and image data from the following datasets:
 
 - **Cards Image Dataset-Classification**
-    - [**Dataset Link**](https://www.kaggle.com/datasets/gpiosenka/cards-image-datasetclassification?resource=download)
-    - This is a very high-quality dataset of playing card images. All images are in jpg format with a size of 224 X 224 X 3. All images in the dataset are cropped, so only single-card images exist, and the card occupies more than 50% of the pixels in the image. There are 7624 training images, 265 test images, and 265 validation images. The training, test, and validation directories are divided into 53 subdirectories, each corresponding to one of the 53 types of cards. This dataset also includes a CSV file that can be used for loading the dataset.
+    - [**Dataset**](https://www.kaggle.com/datasets/gpiosenka/cards-image-datasetclassification?resource=download)
+    - This is a high-quality dataset of playing card images. All images are in jpg format, with dimensions of 224 X 224 X 3. Every image in the dataset has been cropped so that only a single card appears in the image, and the card occupies more than 50% of the image pixels. There are 7,624 training images, 265 test images, and 265 validation images. The training, test, and validation directories are divided into 53 subdirectories, each corresponding to one of the 53 types of cards. The dataset also includes a CSV file for loading the dataset.
 
-We did not include all the data from this dataset as most of the samples were highly similar and did not meet our training needs. Therefore, we only included the following categories:
+    Not all data from this dataset were included, as most samples were highly similar and did not meet our training needs. Therefore, we only incorporated the following categories:
 
-- Joker
-- All types of King
-- All types of Queen
-- All types of Jack
+    - Joker
+    - All types of King
+    - All types of Queen
+    - All types of Jack
 
-We manually selected 5-10 images from each category.
+    From each category, we manually selected 5 to 10 images, totaling approximately 830 text images as a base.
 
-In total, we collected about 840 text images as a base, and defined the following transformation methods:
+- **Indoor Scenes**
+   - [**Indoor**](https://web.mit.edu/torralba/www/indoor.html)
+   - This dataset contains 67 indoor categories, with a total of 15,620 images. The number of images varies per category, but each category has at least 100 images. All images are in jpg format.
+
+   We removed a few damaged images from this dataset and defined each image as a category, obtaining a total of 15,590 images.
+
+In the end, we collected 16,420 images as a base, and defined the following transformation methods:
 
 - Original image
 - Rotation by 90 degrees
 - Rotation by 180 degrees
 - Rotation by 270 degrees
 
-Coupled with horizontal and vertical flips, one image can form 12 variations, so we have about ten thousand text classes in total.
+Coupled with horizontal flipping, vertical flipping, and negative processing, one image can form 24 different categories. Therefore, we have approximately 400,000 text categories in total.
+
+Here is a brief demonstration of the expansion logic:
 
 ```python
 def _build_dataset(self):
+
+    if not (fp := DIR.parent / 'data' / 'indoor_cache.json').is_file():
+        fs_ind = D.get_files(INDOOR_ROOT, suffix=['.jpg', '.png', '.jpeg'])
+        fs_ind_ = [str(f) for f in D.Tqdm(
+            fs_ind, desc='Drop Empty images.') if D.imread(f) is not None]
+        D.dump_json(fs_ind_, fp)
+    else:
+        fs_ind_ = D.load_json(fp)
+
     fs = D.get_files(self.root, suffix=['.jpg', '.png', '.jpeg'])
 
     dataset = []
-    for label, f in D.Tqdm(enumerate(fs)):
-        img = D.imread(f)
+    for label, f in enumerate(D.Tqdm(fs + fs_ind_, desc='Build Dataset')):
 
-        d1 = (label * 12, img)
-        d2 = (label * 12 + 1, D.imrotate(img, 90))
-        d3 = (label * 12 + 2, D.imrotate(img, 180))
-        d4 = (label * 12 + 3, D.imrotate(img, 270))
-        d5 = (label * 12 + 4, cv2.flip(img, 0))
-        d6 = (label * 12 + 5, cv2.flip(D.imrotate(img, 90), 0))
-        d7 = (label * 12 + 6, cv2.flip(D.imrotate(img, 180), 0))
-        d8 = (label * 12 + 7, cv2.flip(D.imrotate(img, 270), 0))
-        d9 = (label * 12 + 8, cv2.flip(img, 1))
-        d10 = (label * 12 + 9, cv2.flip(D.imrotate(img, 90), 1))
-        d11 = (label * 12 + 10, cv2.flip(D.imrotate(img, 180), 1))
-        d12 = (label * 12 + 11, cv2.flip(D.imrotate(img, 270), 1))
+        img = D.imresize(
+            img=D.imread(f),
+            size=self.image_size,
+            interpolation=self.interpolation
+        )
 
-        dataset.extend([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12])
+        d01 = (label * 24, img)
+        d02 = (label * 24 + 1, D.imrotate(img, 90))
+        d03 = (label * 24 + 2, D.imrotate(img, 180))
+        d04 = (label * 24 + 3, D.imrotate(img, 270))
+        d05 = (label * 24 + 4, cv2.flip(img, 0))
+        d06 = (label * 24 + 5, cv2.flip(D.imrotate(img, 90), 0))
+        d07 = (label * 24 + 6, cv2.flip(D.imrotate(img, 180), 0))
+        d08 = (label * 24 + 7, cv2.flip(D.imrotate(img, 270), 0))
+        d09 = (label * 24 + 8, cv2.flip(img, 1))
+        d10 = (label * 24 + 9, cv2.flip(D.imrotate(img, 90), 1))
+        d11 = (label * 24 + 10, cv2.flip(D.imrotate(img, 180), 1))
+        d12 = (label * 24 + 11, cv2.flip(D.imrotate(img, 270), 1))
+        d13 = (label * 24 + 12, 255 - d01[1])
+        d14 = (label * 24 + 13, 255 - d02[1])
+        d15 = (label * 24 + 14, 255 - d03[1])
+        d16 = (label * 24 + 15, 255 - d04[1])
+        d17 = (label * 24 + 16, 255 - d05[1])
+        d18 = (label * 24 + 17, 255 - d06[1])
+        d19 = (label * 24 + 18, 255 - d07[1])
+        d20 = (label * 24 + 19, 255 - d08[1])
+        d21 = (label * 24 + 20, 255 - d09[1])
+        d22 = (label * 24 + 21, 255 - d10[1])
+        d23 = (label * 24 + 22, 255 - d11[1])
+        d24 = (label * 24 + 23, 255 - d12[1])
+
+        dataset.extend([
+            d01, d02, d03, d04, d05, d06, d07, d08, d09, d10, d11, d12,
+            d13, d14, d15, d16, d17, d18, d19, d20, d21, d22, d23, d24,
+        ])
 
     return dataset
 ```
@@ -430,32 +482,15 @@ class DefaultImageAug:
         self.aug = A.Compose([
 
             DT.ShiftScaleRotate(
-                shift_limit=0.2,
-                scale_limit=0.2,
-                rotate_limit=15,
+                shift_limit=0.05,
+                scale_limit=0.05,
+                rotate_limit=10,
             ),
 
             A.OneOf([
-                A.Spatter(mode='mud'),
-                A.GaussNoise(),
-                A.ISONoise(),
                 A.MotionBlur(),
-                A.Defocus(),
-                A.GaussianBlur(blur_limit=(3, 7), p=0.5),
-                A.CoarseDropout(
-                    max_holes=1,
-                    max_height=32,
-                    max_width=32,
-                    min_height=5,
-                    min_width=5,
-                    fill_value=255,
-                ),
+                A.Defocus(radius=(3, 5)),
             ], p=p),
-
-            A.OneOf([
-                A.Equalize(),
-                A.ColorJitter(),
-            ]),
 
         ], p=p)
 
@@ -465,10 +500,10 @@ class DefaultImageAug:
 ```
 
 - **ShiftScaleRotate**
-  - Since we have already expanded the categories by flipping and rotating by 90 degrees, we cannot use flipping and 90-degree rotations here to expand the categories, as it would cause category conflicts. In this case, we can only 'slightly' enhance by rotating and scaling.
+  - Since we have already expanded our categories using flipping and 90-degree rotations, we cannot use extensive flipping or large-scale rotations here, as it would lead to category conflicts. In this case, we only perform slight modifications, specifically limited to minor rotations (plus or minus 10 degrees) and scaling adjustments (5% scale variation).
 
 - **Others**
-  - We have introduced some noise interference, but we need to be very careful with changes in color, as in our logic, images with the same shape but different colors are considered different categories.
+  - We have introduced some blurring and noise disturbances, without altering the colors. This is because, in our logic, images of the same shape but with different colors are considered different categories.
 
 ---
 
@@ -552,7 +587,7 @@ docker run \
     --cpuset-cpus="0-31" \
     -v $PWD/DocClassifier:/code/DocClassifier \
     -v $PWD/trainer.py:/code/trainer.py \
-    -v /data/Dataset:/data/Dataset \
+    -v /data/Dataset:/data/Dataset \ # Replace with your dataset directory
     -it --rm doc_classifier_train python trainer.py --cfg_name $1
 ```
 
@@ -684,7 +719,7 @@ We recommend that you upload the data to your Google Drive and provide us with t
 
 - **Reasons for non-compliance may include**:
     - **Insufficient dataset accuracy**: For example, your dataset is not corrected full-page images but includes background noise.
-    - **Low resolution of the dataset**: Although we only use images of size 96 x 96 in our training process, we expect the original image quality to not be too poor — at least recognizable to the naked eye. We believe this requirement is minimal, and we ask for your understanding.
+    - **Low resolution of the dataset**: Although we only use images of size 128 x 128 in our training process, we expect the original image quality to not be too poor — at least recognizable to the naked eye. We believe this requirement is minimal, thanks for your understanding.
 
 ---
 

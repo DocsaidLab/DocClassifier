@@ -15,9 +15,9 @@
     <img src="./docs/title.jpg" width="800">
 </div>
 
-DocClassifier 是一個創新的文件圖像分類系統，它的設計靈感源自於人臉辨識技術，專門針對傳統分類器在處理文本圖像時面臨的限制進行了深度優化。這個系統非常適合於需要快速識別和註冊新文本類型的場景，如金融科技、銀行業和共享經濟等多個領域。
+DocClassifier 是一個創新的文件圖像分類系統，它的設計靈感源自於人臉辨識技術，專門針對傳統分類器在處理文本圖像時面臨的限制進行了深度優化。這個系統非常適合於需要快速辨識和註冊新文本類型的場景，如金融科技、銀行業和共享經濟等多個領域。
 
-我們的系統採用先進的特徵學習模型架構，並結合了 CosFace 和 ArcFace 等創新的損失函數，有效地實現了在無需預設大量分類頭類別的情況下進行精確分類。為了訓練此模型，我們自主收集了約800張多樣化的文本圖像，並透過影像增強技術進行數據集的擴充，以確保模型能學習到豐富的特徵。
+我們的系統採用先進的特徵學習模型架構，並結合了 CosFace 和 ArcFace 等創新的損失函數，有效地實現了在無需預設大量分類頭類別的情況下進行精確分類。為了訓練此模型，我們自主收集了約 800 張多樣化的文本圖像及用於場景分類的 indoor dataset，並透過影像增強技術進行數據集的擴充，組成約 40 萬類的規模，以確保模型能學習到豐富的特徵。
 
 技術層面上，我們選用了 PyTorch 作為主要訓練框架，並利用 ONNXRuntime 進行模型推論，保證了模型在 CPU 和 GPU 上的高效運行。此外，我們還支援將模型轉換成 ONNX 格式，以便於在不同的平台上進行靈活部署。對於需要進行模型量化的場景，我們提供了基於 ONNXRuntime API 的靜態量化功能，進一步提高了模型的應用靈活性和效能。
 
@@ -98,9 +98,9 @@ from docclassifier import DocClassifier
 
 ### DocBank
 
-在推論的資料夾目錄中，有一個 `docbank` 資料夾，裡面包含了所有的註冊資料，您可以在其中放置您的註冊資料，並且在推論時，指定 `docbank` DocClassifier 會自動讀取資料夾中的所有資料。
+在推論的資料夾目錄中，有一個 `register` 資料夾，裡面包含了所有的註冊資料，您可以在其中放置您的註冊資料，並且在推論時，指定 `register` DocClassifier 會自動讀取資料夾中的所有資料。
 
-如果您要使用自己的資料集，在創建 DocClassifier 時，請指定 `docbank_root` 參數，並且將其設定為您的資料集根目錄。我們建議您的資料使用滿版的圖像，盡量減少背景的干擾，以提高模型的穩定性。
+如果您要使用自己的資料集，在創建 DocClassifier 時，請指定 `register_root` 參數，並且將其設定為您的資料集根目錄。我們建議您的資料使用滿版的圖像，盡量減少背景的干擾，以提高模型的穩定性。
 
 ### ModelType
 
@@ -126,7 +126,7 @@ model = DocClassifier(
     gpu_id=0,  # GPU 編號，如果不使用 GPU 請設為 -1
     backend=Backend.cpu,  # 選擇運算後端，可以是 Backend.cpu 或 Backend.cuda
     threshold=0.5,  # 模型預測的閾值，每個模型都有預設值，如果不需要調整，可以不用設定
-    docbank_root='path/to/your/docbank',  # 註冊資料的根目錄，預設為 docbank
+    register_root='path/to/your/register',  # 註冊資料的根目錄，預設為 register
 )
 ```
 
@@ -200,19 +200,22 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 2. **Zero-shot Testing**
 
-    我們採取零樣本測試策略，確保測試資料中的所有類別或樣態都沒有出現在訓練資料中。 這意味著在模型的訓練階段，它未曾接觸或學習任何測試集的樣本或類別。 這樣做的目的是為了評估和驗證模型在面對完全未知的數據時的泛化能力和識別性能。
+    我們採取零樣本測試策略，確保測試資料中的所有類別或樣態都沒有出現在訓練資料中。這意味著在模型的訓練階段，它未曾接觸或學習任何測試集的樣本或類別。 這樣做的目的是為了評估和驗證模型在面對完全未知的數據時的泛化能力和辨識性能。
 
-    這種測試方法特別適用於評估零樣本學習（Zero-shot Learning）模型，因為零樣本學習的核心挑戰在於處理模型在訓練期間從未見過的類別。 在零樣本學習的脈絡中，模型通常需要利用其他形式的輔助資訊（如類別的文字描述、屬性標籤或類別間的語意關聯）來建立對新類別的理解。 因此，在零樣本測試中，模型必須依賴它從訓練類別中學到的知識，以及類別間的潛在關聯，來識別測試集中的新樣本。
+    這種測試方法特別適用於評估零樣本學習（Zero-shot Learning）模型，因為零樣本學習的核心挑戰在於處理模型在訓練期間從未見過的類別。 在零樣本學習的脈絡中，模型通常需要利用其他形式的輔助資訊（如類別的文字描述、屬性標籤或類別間的語意關聯）來建立對新類別的理解。 因此，在零樣本測試中，模型必須依賴它從訓練類別中學到的知識，以及類別間的潛在關聯，來辨識測試集中的新樣本。
 
 
 ### 評估結果
 
 <div align="center">
 
-| Models | AUROC |
-| :---: | :---: |
-| LC050-96-ArcFace (Ours) |  0.9936 |
-| LC050-96-CosFace (Ours) |  0.9934 |
+| Backbone | AUROC | Number of Categories | Normalization | Pretrain | Features | Resolution | MarginLoss |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| LC050 | 0.9936 | 9,960 | BN | Yes | 128 | 96 | ArcFace |
+| LC050 | 0.9934 | 9,960 | BN | Yes | 128 | 96 | CosFace |
+| LC050 | 0.9982 | 394,080 | LN | Yes | 256 | 128 | CosFace |
+| LC050 | 0.9806 | 394,080 | BN | Yes | 256 | 128 | CosFace |
+| LC050 |  0.8505 | 394,080 | BN | No | 256 | 128 | CosFace |
 
 </div>
 
@@ -247,6 +250,18 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
         <div align="center">
             <img src="./docs/cosface_result.jpg" width="800">
         </div>
+
+### 結果討論
+
+- 對於文本圖像的種類，一開始我們使用了約 500 種，後來增加到 800 種、10000 種等，最後決定納入 indoor dataset 作為基底，把整體的分類種類增加到約 40 萬種。這裡的結論和人臉辨識的任務一致：模型的效果和訓練資料的多樣性有很大的關係，因此我們需要使用大量的資料集，以確保模型能夠學習到足夠的特徵，並且能夠有效地區分不同的類別。
+
+- 經過實驗，在文本圖像分類的任務中，採用 LayerNorm 比 BatchNorm 效果更好，我們認為是因為文本圖像（如街道標誌、文件圖像等）通常包含著高度變異性的特徵，如不同字體、大小、背景雜訊等。LayerNorm 通過對每個樣本進行獨立標準化，幫助模型更有效地處理這些變異。而在人臉辨識中，使用 BatchNorm 有助於模型學習如何從高度相似的臉部圖像中辨識出細微的差異。這對於確保模型在各種不同條件（如照明、角度、表情變化等）下都能有效地辨識臉部特徵。
+
+- Benchmark 資料集是客戶的隱私資料，我們不得以任何形式或方法公開。但我們可以進行一些客觀的討論 —— 這份驗證資料太過於簡單了。相比於人臉辨識常用的 IJB-C 評估協議，我們認為這份資料集的難度遠遠不夠，因此我們在未來的版本中，會嘗試找到更困難的方式，以確保模型的效果能夠更加客觀。
+
+- ArcFace 和 CosFace 所訓練的模型效果差異不大，用哪個都可以。但我們更喜歡 ArcFace 帶給我們的神秘感（？），因此我們選擇了 ArcFace 作為我們的預設模型。
+
+- Pretrain 是必要的，我們嘗試過不使用 Pretrain，但效果非常差。其中原因可能是因為我們 所提供的資料集的多樣性仍然不夠，因此需要使用 Pretrain 來幫助模型學習到更多的特徵。我們再次感謝 timm 所提供的模型，這些模型幫助我們節省了大量的時間和人力。
 
 ---
 
@@ -330,7 +345,7 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
     CosFace 透過引入類間裕度並優化特徵空間中的類內緊湊性，有效增強了臉部辨識任務的表現。它關注特徵向量的方向，而不是它們的大小，使模型更擅長學習區分不同類別的特徵。
 
-    另一方面，ArcFace 提出了一種稱為加性角邊緣損失的方法。ArcFace 的設計理念與 CosFace 相似，但它在計算過程中引入的裕度略有不同。ArcFace 直接在角度空間中添加邊緣，而不是在餘弦函數中。這種方法增加了特徵空間的幾何間隔，進一步促進了類別間特徵的分離和類內特徵的聚合。具體來說，ArcFace 調整了特徵向量與其對應類別權重向量之間角度的計算方式，從而有效提高了識別準確性。
+    另一方面，ArcFace 提出了一種稱為加性角邊緣損失的方法。ArcFace 的設計理念與 CosFace 相似，但它在計算過程中引入的裕度略有不同。ArcFace 直接在角度空間中添加邊緣，而不是在餘弦函數中。這種方法增加了特徵空間的幾何間隔，進一步促進了類別間特徵的分離和類內特徵的聚合。具體來說，ArcFace 調整了特徵向量與其對應類別權重向量之間角度的計算方式，從而有效提高了辨識準確性。
 
     在數學上，ArcFace 的損失函數可以表達為：
 
@@ -350,48 +365,83 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
     - [**Dataset**](https://www.kaggle.com/datasets/gpiosenka/cards-image-datasetclassification?resource=download)
     - 這是一個非常高品質的撲克牌圖像資料集。 所有影像均為 jpg 格式，尺寸為 224 X 224 X 3。 資料集中的所有影像都已裁剪，因此僅存在單一卡片的影像，並且該卡片佔據了影像中超過 50% 的像素。 有 7624 個訓練影像、265 個測試影像和 265 個驗證影像。 訓練、測試和驗證目錄分為 53 個子目錄，每個子目錄對應 53 種類型的卡片。 該資料集還包括一個可用於載入資料集的 csv 檔案。
 
-我們沒有納入該資料集的所有資料，因為大多數的樣本相似性極高，沒有辦法達到我們的訓練需求，因此我們僅僅納入了以下幾個類別：
+    我們沒有納入該資料集的所有資料，因為大多數的樣本相似性極高，沒有辦法達到我們的訓練需求，因此我們僅僅納入了以下幾個類別：
 
-- Joker
-- All type of King
-- All type of Queen
-- All type of Jack
+    - Joker
+    - All type of King
+    - All type of Queen
+    - All type of Jack
 
-我們從每個類別中，手動挑選了 5~10 張圖片。
+    我們從每個類別中，手動挑選了 5~10 張圖片，這個部分總共收集了約 830 張文本影像作為基底。
 
-最後，我們總共收集了約 840 張文本影像作為基底，並定義以下變換方式：
+- **Indoor Scenes**
+   - [**Indoor**](https://web.mit.edu/torralba/www/indoor.html)
+   - 該資料集包含 67 個室內類別，總共 15,620 張圖像。圖像數量因類別而異，但每個類別至少有 100 張圖像。所有圖片均為 jpg 格式。
+
+   我們從該資料集中剔除了少數損壞的影像，並將每一張影像都定義為一個類別，共取得 15,590 張影像。
+
+最後，我們收集了 16,420 張影像作為基底，並定義以下變換方式：
 
 - 原始影像
 - 旋轉 90 度
 - 旋轉 180 度
 - 旋轉 270 度
 
-搭配水平翻轉，和垂直翻轉，一張影像可以構成 12 種類別，因此我們共約有一萬種文本類別。
+搭配水平翻轉，垂直翻轉和負片處理，一張影像可以構成 24 種類別，因此我們共約有 40 萬種文本類別。
 
 以下簡單展示一下擴充邏輯：
 
 ```python
 def _build_dataset(self):
+
+    if not (fp := DIR.parent / 'data' / 'indoor_cache.json').is_file():
+        fs_ind = D.get_files(INDOOR_ROOT, suffix=['.jpg', '.png', '.jpeg'])
+        fs_ind_ = [str(f) for f in D.Tqdm(
+            fs_ind, desc='Drop Empty images.') if D.imread(f) is not None]
+        D.dump_json(fs_ind_, fp)
+    else:
+        fs_ind_ = D.load_json(fp)
+
     fs = D.get_files(self.root, suffix=['.jpg', '.png', '.jpeg'])
 
     dataset = []
-    for label, f in D.Tqdm(enumerate(fs)):
-        img = D.imread(f)
+    for label, f in enumerate(D.Tqdm(fs + fs_ind_, desc='Build Dataset')):
 
-        d1 = (label * 12, img)
-        d2 = (label * 12 + 1, D.imrotate(img, 90))
-        d3 = (label * 12 + 2, D.imrotate(img, 180))
-        d4 = (label * 12 + 3, D.imrotate(img, 270))
-        d5 = (label * 12 + 4, cv2.flip(img, 0))
-        d6 = (label * 12 + 5, cv2.flip(D.imrotate(img, 90), 0))
-        d7 = (label * 12 + 6, cv2.flip(D.imrotate(img, 180), 0))
-        d8 = (label * 12 + 7, cv2.flip(D.imrotate(img, 270), 0))
-        d9 = (label * 12 + 8, cv2.flip(img, 1))
-        d10 = (label * 12 + 9, cv2.flip(D.imrotate(img, 90), 1))
-        d11 = (label * 12 + 10, cv2.flip(D.imrotate(img, 180), 1))
-        d12 = (label * 12 + 11, cv2.flip(D.imrotate(img, 270), 1))
+        img = D.imresize(
+            img=D.imread(f),
+            size=self.image_size,
+            interpolation=self.interpolation
+        )
 
-        dataset.extend([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12])
+        d01 = (label * 24, img)
+        d02 = (label * 24 + 1, D.imrotate(img, 90))
+        d03 = (label * 24 + 2, D.imrotate(img, 180))
+        d04 = (label * 24 + 3, D.imrotate(img, 270))
+        d05 = (label * 24 + 4, cv2.flip(img, 0))
+        d06 = (label * 24 + 5, cv2.flip(D.imrotate(img, 90), 0))
+        d07 = (label * 24 + 6, cv2.flip(D.imrotate(img, 180), 0))
+        d08 = (label * 24 + 7, cv2.flip(D.imrotate(img, 270), 0))
+        d09 = (label * 24 + 8, cv2.flip(img, 1))
+        d10 = (label * 24 + 9, cv2.flip(D.imrotate(img, 90), 1))
+        d11 = (label * 24 + 10, cv2.flip(D.imrotate(img, 180), 1))
+        d12 = (label * 24 + 11, cv2.flip(D.imrotate(img, 270), 1))
+        d13 = (label * 24 + 12, 255 - d01[1])
+        d14 = (label * 24 + 13, 255 - d02[1])
+        d15 = (label * 24 + 14, 255 - d03[1])
+        d16 = (label * 24 + 15, 255 - d04[1])
+        d17 = (label * 24 + 16, 255 - d05[1])
+        d18 = (label * 24 + 17, 255 - d06[1])
+        d19 = (label * 24 + 18, 255 - d07[1])
+        d20 = (label * 24 + 19, 255 - d08[1])
+        d21 = (label * 24 + 20, 255 - d09[1])
+        d22 = (label * 24 + 21, 255 - d10[1])
+        d23 = (label * 24 + 22, 255 - d11[1])
+        d24 = (label * 24 + 23, 255 - d12[1])
+
+        dataset.extend([
+            d01, d02, d03, d04, d05, d06, d07, d08, d09, d10, d11, d12,
+            d13, d14, d15, d16, d17, d18, d19, d20, d21, d22, d23, d24,
+        ])
 
     return dataset
 ```
@@ -436,32 +486,15 @@ class DefaultImageAug:
         self.aug = A.Compose([
 
             DT.ShiftScaleRotate(
-                shift_limit=0.2,
-                scale_limit=0.2,
-                rotate_limit=15,
+                shift_limit=0.05,
+                scale_limit=0.05,
+                rotate_limit=10,
             ),
 
             A.OneOf([
-                A.Spatter(mode='mud'),
-                A.GaussNoise(),
-                A.ISONoise(),
                 A.MotionBlur(),
-                A.Defocus(),
-                A.GaussianBlur(blur_limit=(3, 7), p=0.5),
-                A.CoarseDropout(
-                    max_holes=1,
-                    max_height=32,
-                    max_width=32,
-                    min_height=5,
-                    min_width=5,
-                    fill_value=255,
-                ),
+                A.Defocus(radius=(3, 5)),
             ], p=p),
-
-            A.OneOf([
-                A.Equalize(),
-                A.ColorJitter(),
-            ]),
 
         ], p=p)
 
@@ -471,10 +504,10 @@ class DefaultImageAug:
 ```
 
 - **ShiftScaleRotate**
-  - 由於我們已經使用了翻轉，旋轉90度的方式來擴充類別，因此我們不能在這裡使用翻轉，旋轉90度的方式來擴充類別，否則會造成類別衝突。在這裡，只能「稍微地」做一些旋轉和縮放的增強。
+  - 由於我們已經使用了翻轉，旋轉 90 度的方式來擴充類別，因此我們不能在這裡使用翻轉，大幅旋轉等的方式來擴充類別，否則會造成類別衝突。在這裡，只能稍微地（正負 10 度和 5% 縮放）做一些旋轉和縮放的增強。
 
 - **Others**
-  - 我們做了一些雜訊的干擾，但對於顏色的變化還是得非常小心，因為在我們的邏輯中，相同形狀但顏色不同的影像，會被視為不同的類別。
+  - 我們做了一些模糊雜訊的干擾，且不對顏色進行變化，因為在我們的邏輯中，相同形狀但顏色不同的影像，會被視為不同的類別。
 
 ---
 
@@ -558,7 +591,7 @@ docker run \
     --cpuset-cpus="0-31" \
     -v $PWD/DocClassifier:/code/DocClassifier \
     -v $PWD/trainer.py:/code/trainer.py \
-    -v /data/Dataset:/data/Dataset \
+    -v /data/Dataset:/data/Dataset \ # 這裡替換成您的資料集目錄
     -it --rm doc_classifier_train python trainer.py --cfg_name $1
 ```
 
@@ -688,7 +721,7 @@ bash DocClassifier/docker/to_onnx.bash lcnet050_cosface_96 # 這裡替換成您�
 
 - **不符合需求的原因可能有**：
     - **資料集精度不足**：例如您的資料集中不是經過校正後的滿版影像，而是帶有背景雜訊。
-    - **資料集解析度過低**：雖然我們在訓練模型的過程中僅使用 96 x 96 大小的影像，但我們希望原始的影像品質不能太差 —— 至少肉眼可以辨識，我們相信這個的要求已經很低了，還請見諒。
+    - **資料集解析度過低**：雖然我們在訓練模型的過程中僅使用 128 x 128 大小的影像，但我們希望原始的影像品質不能太差 —— 至少肉眼可以辨識，我們相信這個的要求已經很低了，若因此造成您的困擾還請見諒。
 
 ---
 
