@@ -211,14 +211,22 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 ### Evaluation Results
 
-<div align="center">
+- **Backbone:** LCNet-050
+- **Number of Classes:** 394,080
+- **TPR @ FPR** = 1e-4
 
-| Backbone | TPR@FPR(1e-4) | ROC | Classes | Norm | Pretrain | Feats | Res | Loss |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| LC050 | 0.715 | 0.9936 | 9,960 | BN | Yes | 128 | 96 | ArcFace |
-| LC050 | 0.653 | 0.9934 | 9,960 | BN | Yes | 128 | 96 | CosFace |
+    <div align="left">
 
-</div>
+    | - | TPR@FPR | ROC | Norm | Feats | Res | Loss | FLOPs (G) | Size (MB) | Conn | Pretrain |
+    | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+    | 1 | 0.653 | 0.9820 | LN | 128 |  96 | CosFace | 0.029 | 2.33 | Flatten | Yes |
+    | 2 | 0.708 | 0.9850 | LN | 512 | 128 | CosFace | 0.051 | 2.67 | GAP | Yes |
+    | 3 | 0.921 | 0.9975 | LN | 256 | 128 | CosFace | 0.052 | 2.46 | Squeeze | Yes |
+    | 4 | 0.926 | 0.9982 | LN | 256 | 128 | CosFace | 0.053 | 5.54 | Flatten | Yes |
+    | 5 | 0.712 | 0.9806 | BN | 256 | 128 | CosFace | 0.053 | 5.54 | Flatten | Yes |
+    | 6 | 0.189 | 0.8505 | BN | 256 | 128 | CosFace | 0.053 | 5.54 | Flatten | No |
+
+    </div>
 
 ---
 
@@ -263,6 +271,8 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 - The performance difference between models trained with ArcFace and CosFace is negligible, and either could be used. However, we prefer the sense of mystery (perhaps?) that ArcFace offers, so we chose it as our default model.
 
 - Pretrain is necessary. We tried not to use Pretrain, but the effect was very poor. The reason may be that the diversity of the data set we provided is still not enough, so we need to use Pretrain to help the model learn more features. We thank the models provided by timm again, which saved us a lot of time and manpower.
+
+- In the process of connecting the Backbone and Head, using `nn.Flatten` to capture all information and integrating it into the feature encoding layer with `nn.Linear` proves to be the most effective approach. However, the downside is that it requires a substantial amount of parameters — in scenarios where lightweight models are crucial, even an increase of 1MB in model size is considered significant. To address this, we experimented with two approaches. Firstly, we tried using `nn.GlobalAvgPool2d` to gather all information and then integrated it into the feature encoding layer with `nn.Linear`. Secondly, we applied `nn.Conv2d` to reduce the number of channels to a quarter of the original count, a step we refer to as **Squeeze**, followed by using `nn.Flatten` in combination with `nn.Linear` for integration into the feature encoding layer. Our experiments show that the **Squeeze** strategy is the right choice. This strategy not only effectively reduces the model size but also maintains its performance.
 
 ---
 

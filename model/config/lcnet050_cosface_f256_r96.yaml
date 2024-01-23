@@ -1,5 +1,5 @@
 common:
-  batch_size: 256
+  batch_size: 512
   image_size: [96, 96]
   is_restore: False
   restore_ind: ""
@@ -28,16 +28,18 @@ model:
       features_only: True
       replace_components: True
   head:
-    name: FeatureLearningHead
+    name: FeatureLearningLNHead
     options:
       in_dim: 256
+      embed_dim: 256
+      feature_map_size: 3
   loss:
-    name: ArcFace
+    name: CosFace
     options:
       s: 64
       m: 0.4
     num_classes: -1
-    embed_dim: 128
+    embed_dim: 256
 
 onnx:
   name: WarpFeatureLearning
@@ -66,7 +68,7 @@ dataset:
     name: SyncDataset
     options:
       aug_ratio: 1
-      length_of_dataset: 256000
+      length_of_dataset: 5120000
   valid_options:
     name: RealDataset
     options:
@@ -89,7 +91,7 @@ optimizer:
   options:
     lr: 1.0e-3
     betas: [0.9, 0.999]
-    weight_decay: 0.1
+    weight_decay: 0.001
     amsgrad: False
 
 lr_scheduler:
@@ -104,7 +106,7 @@ lr_scheduler:
 callbacks:
   - name: ModelCheckpoint
     options:
-      monitor: valid_auc
+      monitor: valid_fpr@4
       mode: max
       verbose: True
       save_last: True

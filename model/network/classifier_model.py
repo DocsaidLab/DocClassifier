@@ -176,7 +176,7 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         ths = ths.cpu().numpy()
         ax.plot(fprs, tprs, label=f'AUC = {auc * 100:.2f} %')
 
-        fpr_row = ["FPR", 10 ** -4, 10 ** -3, 10 ** -2, 10 ** -1, 1]
+        fpr_row = ["FPR", 10 ** -5, 10 ** -4, 10 ** -3, 10 ** -2, 10 ** -1, 1]
         tpr_row = ["TPR", ]
         th_row = ["Threshold"]
 
@@ -195,6 +195,8 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         tpr_fpr_table.add_row(fpr_row)
         tpr_fpr_table.add_row(tpr_row)
         tpr_fpr_table.add_row(th_row)
+
+        self.log('valid_fpr@4', tpr_row[2], prog_bar=True)
 
         tpr_fpr_table_txt_fpath = str(
             self.preview_dir / f"tpr_fpr_table_{self.current_epoch:04d}.txt")

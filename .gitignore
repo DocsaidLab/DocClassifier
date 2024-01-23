@@ -166,7 +166,7 @@ register/
 private/
 ckpt/
 *.pt
+*.onnx
+*cache*
 
-lcnet050_cosface_96/
-
-lcnet050_arcface_96/
+lcnet050_cosface_f256_r128_squeeze/
