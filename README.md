@@ -197,7 +197,13 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
             - **AUROC = 0.5**: No discriminative ability, equivalent to random guessing.
             - **AUROC < 0.5**: Worse than random guessing, but if the model's predictions are interpreted inversely (predicting positive class as negative and vice versa), it may perform better.
 
-2. **Zero-shot Testing**
+2. **TPR@FPR Threshold Table**
+
+    The TPR@FPR Threshold Table is a key evaluation tool widely used in the field of facial recognition. Its primary purpose is to measure the performance of models under different threshold settings. Derived from the ROC (Receiver Operating Characteristic) curve, this table offers an intuitive and precise method for assessing model efficacy. For example, if the goal is to achieve a TPR (True Positive Rate) of at least 0.9 at an FPR (False Positive Rate) of 0.01, the corresponding threshold can be identified using the TPR-FPR Threshold Table. This threshold then guides the inference process of the model.
+
+    In the task of text-image recognition, we have adopted a similar evaluation method. We have chosen the performance of TPR at an FPR of 0.0001 as our standard. This standard assists us in understanding the model's performance under specific conditions more accurately.
+
+3. **Zero-shot Testing**
 
     We adopt a zero-shot testing strategy, ensuring that all categories or patterns in the test data do not appear in the training data. This means that during the training phase of the model, it has never encountered or learned any samples or categories from the test set. The purpose of this is to evaluate and validate the model's generalization ability and identification performance when faced with completely unknown data.
 
@@ -207,13 +213,10 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 <div align="center">
 
-| Backbone | AUROC | Number of Categories | Normalization | Pretrain | Features | Resolution | MarginLoss |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| LC050 | 0.9936 | 9,960 | BN | Yes | 128 | 96 | ArcFace |
-| LC050 | 0.9934 | 9,960 | BN | Yes | 128 | 96 | CosFace |
-| LC050 | 0.9982 | 394,080 | LN | Yes | 256 | 128 | CosFace |
-| LC050 | 0.9806 | 394,080 | BN | Yes | 256 | 128 | CosFace |
-| LC050 |  0.8505 | 394,080 | BN | No | 256 | 128 | CosFace |
+| Backbone | TPR@FPR(1e-4) | ROC | Classes | Norm | Pretrain | Feats | Res | Loss |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| LC050 | 0.715 | 0.9936 | 9,960 | BN | Yes | 128 | 96 | ArcFace |
+| LC050 | 0.653 | 0.9934 | 9,960 | BN | Yes | 128 | 96 | CosFace |
 
 </div>
 

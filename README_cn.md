@@ -198,7 +198,13 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
             - **AUROC = 0.5**：無區分能力，相當於隨機猜測。
             - **AUROC < 0.5**：比隨機猜測還差，但如果模型預測反向解釋（將正類預測為負類，反之亦然），可能會有較好的效能。
 
-2. **Zero-shot Testing**
+2. **TPR@FPR 閾值表**
+
+    TPR@FPR 閾值表是在人臉辨識領域中廣泛使用的一種關鍵評估工具，其主要用途是衡量模型在不同閾值設定下的表現。這種表格是基於 ROC 曲線衍生出來的，提供了一種直觀且精確的方法來評估模型效能。例如，若目標是在FPR（假陽性率）為0.01時達到至少TPR（真陽性率）0.9的效能，我們可以透過 TPR-FPR 閾值表來確定相對應的閾值。這個閾值進而指導模型推論的過程。
+
+    在文本圖像辨識的任務中，我們也採納了類似的評估方法。我們選擇了 TPR 在 FPR 為 0.0001 時的表現作為標準，這樣的標準幫助我們更準確地理解模型在特定條件下的效能。
+
+3. **Zero-shot Testing**
 
     我們採取零樣本測試策略，確保測試資料中的所有類別或樣態都沒有出現在訓練資料中。這意味著在模型的訓練階段，它未曾接觸或學習任何測試集的樣本或類別。 這樣做的目的是為了評估和驗證模型在面對完全未知的數據時的泛化能力和辨識性能。
 
@@ -209,13 +215,11 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 <div align="center">
 
-| Backbone | AUROC | Number of Categories | Normalization | Pretrain | Features | Resolution | MarginLoss |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| LC050 | 0.9936 | 9,960 | BN | Yes | 128 | 96 | ArcFace |
-| LC050 | 0.9934 | 9,960 | BN | Yes | 128 | 96 | CosFace |
-| LC050 | 0.9982 | 394,080 | LN | Yes | 256 | 128 | CosFace |
-| LC050 | 0.9806 | 394,080 | BN | Yes | 256 | 128 | CosFace |
-| LC050 |  0.8505 | 394,080 | BN | No | 256 | 128 | CosFace |
+| Backbone | TPR@FPR(1e-4) | ROC | Classes | Norm | Pretrain | Feats | Res | Loss |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| LC050 | 0.715 | 0.9936 | 9,960 | BN | Yes | 128 | 96 | ArcFace |
+| LC050 | 0.653 | 0.9934 | 9,960 | BN | Yes | 128 | 96 | CosFace |
+
 
 </div>
 

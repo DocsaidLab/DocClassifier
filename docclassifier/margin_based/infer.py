@@ -65,14 +65,14 @@ class Inference:
             file_id = cfg['file_id']
             os.system(D.gen_download_cmd(file_id, model_path))
         self.model = D.ONNXEngine(model_path, gpu_id, backend, **kwargs)
-        self.bank = self.get_doc_bank(register_root)
+        self.bank = self.get_register(register_root)
         self.threshold = threshold if threshold is not None else cfg['threshold']
 
     @staticmethod
     def compare(feat1, feat2):
         return (np.dot(feat1, feat2) + 1) / 2
 
-    def get_doc_bank(self, root: Union[str, D.Path] = None):
+    def get_register(self, root: Union[str, D.Path] = None):
         root = DIR.parent / 'register' if root is None else D.Path(root)
         return {
             f.stem: self.extract_feature(D.imread(f))
