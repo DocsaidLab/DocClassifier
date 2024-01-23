@@ -24,7 +24,7 @@ class DocClassifier:
         backend: D.Backend = D.Backend.cpu,
         gpu_id: int = 0,
         threshold: float = None,
-        docbank_root: Union[str, D.Path] = None,
+        register_root: Union[str, D.Path] = None,
         **kwargs
     ):
         model_type = ModelType.obj_to_enum(model_type)
@@ -41,7 +41,7 @@ class DocClassifier:
                 backend=backend,
                 model_cfg=model_cfg,
                 threshold=threshold,
-                docbank_root=docbank_root,
+                register_root=register_root,
                 **kwargs
             )
 
