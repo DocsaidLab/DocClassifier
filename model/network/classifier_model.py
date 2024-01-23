@@ -19,12 +19,23 @@ from .component import *
 
 DIR = D.get_curdir(__file__)
 
+INDOOR_ROOT = '/data/Dataset/indoor_scene_recognition/Images'
+
 
 def get_num_classes(root: Union[str, Path] = None) -> int:
+
+    if not (fp := DIR.parent.parent / 'data' / 'indoor_cache.json').is_file():
+        fs_ind = D.get_files(INDOOR_ROOT, suffix=['.jpg', '.png', '.jpeg'])
+        fs_ind_ = [str(f) for f in D.Tqdm(
+            fs_ind, desc='Drop Empty images.') if D.imread(f) is not None]
+        D.dump_json(fs_ind_, fp)
+    else:
+        fs_ind_ = D.load_json(fp)
+
     default_root = DIR.parent.parent / 'data' / 'unique_pool' \
         if root is None else root
-    fs = D.get_files(default_root, suffix=['.jpg']) * 12  # with augmentation
-    return len(fs)
+    fs = D.get_files(default_root, suffix=['.jpg'])
+    return (len(fs) + len(fs_ind_)) * 24  # with augmentation
 
 
 class ClassifierModel(DT.BaseMixin, L.LightningModule):
@@ -205,6 +216,7 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         # plot featuers with pca
         pca = PCA(n_components=2)
         feats = pca.fit_transform(feats)
+        explained_ = pca.explained_variance_ratio_
 
         label_mapper = {
             0: 'IDCardFront',
@@ -228,7 +240,8 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
             plt.scatter(feats[labels == label, 0], feats[labels == label, 1],
                         color=colors[label], marker=markers[label % len(markers)], label=mapped_label, s=3)
 
-        plt.title("PCA of Features")
+        plt.title(
+            f"PCA of Features - PC1: {explained_[0]:.2f}, PC2: {explained_[1]:.2f}")
         plt.xlabel("Principal Component 1")
         plt.ylabel("Principal Component 2")
         plt.legend()

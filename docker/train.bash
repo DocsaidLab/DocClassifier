@@ -17,4 +17,5 @@ docker run \
     --cpuset-cpus="0-31" \
     -v $PWD/DocClassifier:/code/DocClassifier \
     -v $PWD/trainer.py:/code/trainer.py \
+    -v /data/Dataset:/data/Dataset \
     -it --rm doc_classifier_train python trainer.py --cfg_name $1
