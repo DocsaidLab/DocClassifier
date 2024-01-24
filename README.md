@@ -179,6 +179,12 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
         <img src="./docs/test_driver.jpg" width="300">
     </div>
 
+### Model Threshold Setting
+
+While we adopt the TPR@FPR=1e-4 standard in assessing the capabilities of our model, and our deployment program also defaults to the values corresponding to this standard, in reality, this criterion is relatively strict. It can lead to a less favorable user experience during deployment. Therefore, we suggest using the TPR@FPR=1e-1 or TPR@FPR=1e-2 threshold settings for deployment.
+
+For related tables, please refer to the explanation section in [Evaluation Results](#evaluation-results).
+
 ---
 
 ## Benchmark

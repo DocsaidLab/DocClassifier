@@ -35,16 +35,16 @@ class Inference:
 
     configs = {
         'lcnet050_arcface': {
-            'model_path': 'lcnet050_arcface_fp32.onnx',
-            'file_id': '1eBQTR5Hn1tKJ6mp-pxo6kJY4PIWojYoo',
-            'img_size_infer': (96, 96),
-            'threshold': 0.7021  # FPR=0.01
+            'model_path': 'lcnet050_arcface_f256_r128_squeeze_20240124_fp32.onnx',
+            'file_id': '1sv67I1NQVZnF_e7avd3zHirTFhdkaIz8',
+            'img_size_infer': (128, 128),
+            'threshold': 0.6546  # FPR=0.0001
         },
         'lcnet050_cosface': {
-            'model_path': 'lcnet050_cosface_fp32.onnx',
-            'file_id': '1SsYoFiM0C0wPHKAe3XDcgxaYNsPFFqfA',
-            'img_size_infer': (96, 96),
-            'threshold': 0.6765  # FPR=0.01
+            'model_path': 'lcnet050_cosface_f256_r128_squeeze_20240124_fp32.onnx',
+            'file_id': '1wtBQbluIg0jRv_shxwtrv5TEqCUc3_hv',
+            'img_size_infer': (128, 128),
+            'threshold': 0.66489  # FPR=0.0001
         },
     }
 

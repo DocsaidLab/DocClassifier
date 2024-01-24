@@ -180,6 +180,12 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
         <img src="./docs/test_driver.jpg" width="300">
     </div>
 
+### 模型閾值設定
+
+雖然我們在評估模型的能力上，採用 TPR@FPR=1e-4 的標準，並且我們的部署程式也預設使用該標準所對應的數值。但實際上這個標準相對嚴格，且在部署時候會要成比較不好的使用者體驗。因此我們建議在部署時，可以採用 TPR@FPR=1e-1 或 TPR@FPR=1e-2 的閾值設定。
+
+相關表格請參考[評估結果](#評估結果)的說明章節。
+
 ---
 
 ## 評估模型（Benchmark）

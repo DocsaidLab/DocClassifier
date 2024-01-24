@@ -12,13 +12,14 @@ __all__ = [
 
 
 class ModelType(D.EnumCheckMixin, Enum):
-    margin_based = 1
+    margin_based = 0
 
 
 class DocClassifier:
 
     def __init__(
         self,
+        *,
         model_type: ModelType = ModelType.margin_based,
         model_cfg: str = None,
         backend: D.Backend = D.Backend.cpu,
