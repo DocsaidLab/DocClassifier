@@ -101,7 +101,7 @@ In the inference folder directory, there is a `register` folder that contains al
 
 If you wish to use your own dataset, when creating the `DocClassifier`, please specify the `register_root` parameter and set it as the root directory of your dataset. We recommend using full-page images for your data to minimize background interference, thereby enhancing the stability of the model.
 
-We have pre-loaded some document image registration data in the module for your reference. You can look at these and expand on them as needed.
+We have pre-installed several document images and their registration data in the module for your reference, and you are welcome to expand upon these resources. At the same time, we strongly recommend using your own dataset to ensure that the model adapts well to your application scenario. For example, many of the images pre-installed in the folder are of low resolution, which can lead to inaccurate results during model inference.
 
 <div align="center">
     <img src="./docs/register_demo.jpg" width="600">
@@ -235,28 +235,27 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 | Name | TPR@FPR=1e-4 | ROC | FLOPs (G) | Size (MB) |
 | --- | :---: | :---: | :---: | :---: |
-| lcnet050-f128-r96-ln-cos-flat | 0.653 | 0.9820 | 0.029 | 2.33 |
-| lcnet050-f512-r128-ln-cos-gap | 0.708 | 0.9850 | 0.051 | 2.67 |
-| lcnet050-f256-r128-ln-cos-flat | 0.926 | 0.9982 | 0.053 | 5.54 |
-| lcnet050-f256-r128-bn-cos-flat | 0.712 | 0.9809 | 0.053 | 5.54 |
-| lcnet050-f256-r128-bn-cos-flat-from-scratch | 0.851 | 0.1886 | 0.053 | 5.54 |
-| lcnet050-f256-r128-ln-cos-squeeze | 0.921 | **0.9974** | 0.052 | 2.46 |
-| **lcnet050-f256-r128-ln-arc-squeeze** | **0.924** | 0.9970 | 0.052 | 2.46 |
-
+| lcnet050-f128-r96-ln-arc | 0.800 | 0.9932 | 0.029 | 2.33 |
+| lcnet050-f256-r128-ln-arc | 0.951 | 0.9972 | 0.053 | 5.54 |
+| lcnet050-f256-r128-bn-arc | 0.876 | 0.9947 | 0.053 | 5.54 |
+| lcnet050-f256-r128-ln-arc-from-scratch | 0.330 | 0.9501 | 0.053 | 5.54 |
+| lcnet050-f512-r128-ln-arc-gap | 0.717 | 0.9876 | 0.051 | 2.67 |
+| lcnet050-f256-r128-ln-arc-squeeze | 0.953 | 0.9975 | 0.052 | 2.46 |
+| lcnet050-f256-r128-ln-cos-squeeze | 0.942 | 0.9975 | 0.052 | 2.46 |
 </div>
 
 ---
 
 - **lcnet050-f256-r128-ln-arc-squeeze results**
 
-    - **TPR @ FPR = 0.0001: 0.924**
+    - **TPR @ FPR = 0.0001: 0.953**
 
         <div align="center">
 
         |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
         | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.867  |  0.924  |  0.957  |  0.981  |  0.994  |   1.0   |
-        | Threshold |  0.711  |  0.685  |  0.662  |  0.632  |  0.588  |  0.373  |
+        |    TPR    |  0.922  |  0.953  |  0.974  |  0.989  |  0.996  |   1.0   |
+        | Threshold |  0.675  |  0.657  |  0.636  |  0.610  |  0.572  |  0.371  |
 
         </div>
 
@@ -268,14 +267,14 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 - **lcnet050-f256-r128-ln-cos-squeeze Results**
 
-    - **TPR @ FPR = 0.0001: 0.921**
+    - **TPR @ FPR = 0.0001: 0.942**
 
         <div align="center">
 
         |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
         | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.836  |  0.921  |  0.956  |  0.981  |  0.994  |   1.0   |
-        | Threshold |  0.698  |  0.667  |  0.645  |  0.616  |  0.575  |  0.361  |
+        |    TPR    |  0.913  |  0.942  |  0.970  |  0.987  |  0.995  |   1.0   |
+        | Threshold |  0.698  |  0.681  |  0.657  |  0.627  |  0.586  |  0.351  |
 
         </div>
 

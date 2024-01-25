@@ -70,7 +70,7 @@ class FeatureLearningLNHead(nn.Module):
         if feature_map_size is None:
             raise ValueError('image_size must be specified')
 
-        in_dim_ = (in_dim // 2) * feature_map_size * feature_map_size
+        in_dim_ = in_dim * feature_map_size * feature_map_size
         self.embed_features = nn.Sequential(
             nn.Flatten(),
             nn.Linear(in_dim_, embed_dim, bias=False),

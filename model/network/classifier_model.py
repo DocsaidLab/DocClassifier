@@ -225,10 +225,9 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
             1: 'IDCardBack',
             2: 'DriverLicenseFront',
             3: 'HealthIDCard',
-            4: 'Passport',
-            5: 'ResidentIDCardFront',
-            6: 'ResidentIDCardBack',
-            7: 'VehicleLicense'
+            4: 'ResidentIDCardFront',
+            5: 'ResidentIDCardBack',
+            6: 'VehicleLicense'
         }
 
         unique_labels = list(label_mapper.keys())

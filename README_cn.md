@@ -102,7 +102,7 @@ from docclassifier import DocClassifier
 
 如果您要使用自己的資料集，在創建 `DocClassifier` 時，請指定 `register_root` 參數，並且將其設定為您的資料集根目錄。我們建議您的資料使用滿版的圖像，盡量減少背景的干擾，以提高模型的穩定性。
 
-我們在模組內預設放了幾個文件圖像的註冊資料，您可以參考這些資料，並且自行擴充。
+我們在模組內預設放了幾個文件圖像的註冊資料，您可以參考這些資料，並且自行擴充。同時，我們也強烈建議使用您自己的資料集，以確保模型能夠適應您的應用場景。舉例來說，我們預先放在資料夾內的許多影像的解析度都很低，從而導致在推論的時候模型容易得到錯誤的答案。
 
 <div  align="center">
     <img src="./docs/register_demo.jpg" width="600">
@@ -228,22 +228,30 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
     這種測試方法特別適用於評估零樣本學習（Zero-shot Learning）模型，因為零樣本學習的核心挑戰在於處理模型在訓練期間從未見過的類別。 在零樣本學習的脈絡中，模型通常需要利用其他形式的輔助資訊（如類別的文字描述、屬性標籤或類別間的語意關聯）來建立對新類別的理解。 因此，在零樣本測試中，模型必須依賴它從訓練類別中學到的知識，以及類別間的潛在關聯，來辨識測試集中的新樣本。
 
-
 ### 評估結果
 
-- Number of Classes: 394,080
+- Num of classes: 394,080
+- Num of epochs: 20
+- Num of data per epoch: 2,560,000
+- Batch Size: 256
+- Optimizer: AdamW
+- Setting:
+    - gap: GlobalAveragePooling2d -> Linear
+    - flatten: Flatten -> Linear
+    - squeeze: Conv2d -> Flatten -> Linear
 
 <div align="center">
 
 | Name | TPR@FPR=1e-4 | ROC | FLOPs (G) | Size (MB) |
 | --- | :---: | :---: | :---: | :---: |
-| lcnet050-f128-r96-ln-cos-flat | 0.653 | 0.9820 | 0.029 | 2.33 |
-| lcnet050-f512-r128-ln-cos-gap | 0.708 | 0.9850 | 0.051 | 2.67 |
-| lcnet050-f256-r128-ln-cos-flat | 0.926 | 0.9982 | 0.053 | 5.54 |
-| lcnet050-f256-r128-bn-cos-flat | 0.712 | 0.9809 | 0.053 | 5.54 |
-| lcnet050-f256-r128-bn-cos-flat-from-scratch | 0.851 | 0.1886 | 0.053 | 5.54 |
-| lcnet050-f256-r128-ln-cos-squeeze | 0.921 | **0.9974** | 0.052 | 2.46 |
-| **lcnet050-f256-r128-ln-arc-squeeze** | **0.924** | 0.9970 | 0.052 | 2.46 |
+| lcnet050-f128-r96-ln-arc | 0.800 | 0.9932 | 0.029 | 2.33 |
+| lcnet050-f256-r128-ln-arc | 0.951 | 0.9972 | 0.053 | 5.54 |
+| lcnet050-f256-r128-bn-arc | 0.876 | 0.9947 | 0.053 | 5.54 |
+| lcnet050-f256-r128-ln-arc-from-scratch | 0.330 | 0.9501 | 0.053 | 5.54 |
+| lcnet050-f512-r128-ln-arc-gap | 0.717 | 0.9876 | 0.051 | 2.67 |
+| lcnet050-f256-r128-ln-arc-squeeze | 0.953 | 0.9975 | 0.052 | 2.46 |
+| lcnet050-f256-r128-ln-cos-squeeze | 0.942 | 0.9975 | 0.052 | 2.46 |
+
 
 </div>
 
@@ -251,14 +259,14 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **lcnet050-f256-r128-ln-arc-squeeze results**
 
-    - **TPR @ FPR = 0.0001: 0.924**
+    - **TPR @ FPR = 0.0001: 0.953**
 
         <div align="center">
 
         |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
         | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.867  |  0.924  |  0.957  |  0.981  |  0.994  |   1.0   |
-        | Threshold |  0.711  |  0.685  |  0.662  |  0.632  |  0.588  |  0.373  |
+        |    TPR    |  0.922  |  0.953  |  0.974  |  0.989  |  0.996  |   1.0   |
+        | Threshold |  0.675  |  0.657  |  0.636  |  0.610  |  0.572  |  0.371  |
 
         </div>
 
@@ -270,14 +278,14 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **lcnet050-f256-r128-ln-cos-squeeze Results**
 
-    - **TPR @ FPR = 0.0001: 0.921**
+    - **TPR @ FPR = 0.0001: 0.942**
 
         <div align="center">
 
         |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
         | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.836  |  0.921  |  0.956  |  0.981  |  0.994  |   1.0   |
-        | Threshold |  0.698  |  0.667  |  0.645  |  0.616  |  0.575  |  0.361  |
+        |    TPR    |  0.913  |  0.942  |  0.970  |  0.987  |  0.995  |   1.0   |
+        | Threshold |  0.698  |  0.681  |  0.657  |  0.627  |  0.586  |  0.351  |
 
         </div>
 

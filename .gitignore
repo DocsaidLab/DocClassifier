@@ -172,3 +172,13 @@ ckpt/
 lcnet050_cosface_f256_r128_squeeze/
 
 lcnet050_arcface_f256_r128_squeeze/
+
+lcnet050_arcface_f256_r128_ln/
+
+lcnet050_arcface_f256_r128/
+
+lcnet050_arcface_f256_r128_from_scratch/
+
+lcnet050_arcface_f512_r128_gap/
+
+lcnet050_arcface_f128_r96/

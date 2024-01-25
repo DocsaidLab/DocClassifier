@@ -68,7 +68,7 @@ dataset:
     name: SyncDataset
     options:
       aug_ratio: 1
-      length_of_dataset: 5120000
+      length_of_dataset: 2560000
   valid_options:
     name: RealDataset
     options:

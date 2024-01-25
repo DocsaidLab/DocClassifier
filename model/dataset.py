@@ -26,8 +26,23 @@ class DefaultImageAug:
 
             A.OneOf([
                 A.MotionBlur(),
+                A.MedianBlur(),
+                A.GaussianBlur(),
+                A.ZoomBlur(),
                 A.Defocus(radius=(3, 5)),
-            ], p=p),
+            ]),
+
+            A.OneOf([
+                A.ISONoise(),
+                A.GaussNoise(),
+                A.MultiplicativeNoise(
+                    multiplier=[0.5, 1.5],
+                    elementwise=True,
+                    per_channel=True
+                ),
+            ]),
+
+            A.ColorJitter()
 
         ], p=p)
 
@@ -141,10 +156,9 @@ class RealDataset:
         'IDCardBack': 1,
         'DriverLicenseFront': 2,
         'HealthIDCard': 3,
-        'Passport': 4,
-        'ResidentIDCardFront': 5,
-        'ResidentIDCardBack': 6,
-        'VehicleLicense': 7
+        'ResidentIDCardFront': 4,
+        'ResidentIDCardBack': 5,
+        'VehicleLicense': 6
     }
 
     def __init__(
@@ -167,7 +181,7 @@ class RealDataset:
 
     def _build_dataset(self):
         fs = D.get_files(self.root, suffix=['.jpg', '.png', '.jpeg'])
-        return [(f.parent.name, f) for f in fs]
+        return [(f.parent.name, f) for f in fs if f.parent.name != 'Passport']
 
     def __getitem__(self, idx):
         label, file = self.dataset[idx]
