@@ -1,3 +1,3 @@
-from .classifier import DocClassifier
+from .classifier import *
 
 __version__ = '0.2.0'

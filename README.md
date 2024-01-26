@@ -229,7 +229,15 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 ### Evaluation Results
 
-- Number of Classes: 394,080
+- Num of classes: 394,080
+- Num of epochs: 20
+- Num of data per epoch: 2,560,000
+- Batch Size: 256
+- Optimizer: AdamW
+- Setting:
+    - gap: GlobalAveragePooling2d -> Linear
+    - flatten: Flatten -> Linear
+    - squeeze: Conv2d -> Flatten -> Linear
 
 <div align="center">
 
