@@ -111,9 +111,11 @@ def main_docclassifier_torch2onnx(cfg_name: Union[str, Path]):
         as_strings=False
     )
 
+    additional_meta_info = getattr(cfg.onnx, 'additional_meta_info', {})
     meta_data = DT.get_meta_info(macs, params)
     meta_data.update({
-        'InputInfo': repr({k: v for k, v in cfg.onnx.input_shape.items()})
+        'InputInfo': repr({k: v for k, v in cfg.onnx.input_shape.items()}),
+        **additional_meta_info
     })
 
     pprint(meta_data)

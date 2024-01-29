@@ -309,6 +309,8 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - 在 Backbone 與 Head 串接的過程中，使用 `nn.Flatten` 取得所有資訊並使用 `nn.Linear` 整合到特徵編碼層效果是最好的！但是缺點是需要佔用大量的參數 —— 在輕量模型的場景中，增加 1MB 的模型大小都是一件令人髮指的事情。為此我們嘗試了兩個方向，其一：使用 `nn.GlobalAvgPool2d` 取得所有資訊並使用 `nn.Linear` 整合到特徵編碼層；其二：使用 `nn.Conv2d` 先將通道數降維至原本的 1/4 ，這邊我們稱為 Squeeze，接著再使用 `nn.Flatten` 搭配 `nn.Linear` 整合到特徵編碼層。經過實驗，使用 Squeeze 的策略是對的。這個策略不僅能夠有效地減少模型大小，同時維持模型的效能。
 
+- 當我們使用 `FastViT-T8` 的模型作為特徵提取的架構時，發現模型出現效能嚴重降低的問題（TPR@FPR=1e-4 -> 0.33）。於是我們換成規模相近的 `EfficientNet_B0`，卻沒有出現相同的問題。儘管我們仔細審視 `FastViT` 的架構，但目前仍沒有辦法鎖定造成這個問題的確切原因。
+
 ---
 
 ## 開始訓練模型之前

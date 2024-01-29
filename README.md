@@ -31,7 +31,7 @@ On our validation dataset, our model demonstrated over 99% accuracy based on a z
 - [Table of Contents](#table-of-contents)
 - [Quick Start](#quick-start)
 - [Benchmark](#benchmark)
-- [Before We start Training](#before-we-start-training)
+- [Before We Start Training](#before-we-start-training)
 - [Training the Model](#training-the-model)
 - [Model Architecture Design](#model-architecture-design)
 - [Dataset](#dataset)
@@ -219,7 +219,7 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
     The TPR@FPR Threshold Table is a key evaluation tool widely used in the field of facial recognition. Its primary purpose is to measure the performance of models under different threshold settings. Derived from the ROC (Receiver Operating Characteristic) curve, this table offers an intuitive and precise method for assessing model efficacy. For example, if the goal is to achieve a TPR (True Positive Rate) of at least 0.9 at an FPR (False Positive Rate) of 0.01, the corresponding threshold can be identified using the TPR-FPR Threshold Table. This threshold then guides the inference process of the model.
 
-    In the task of text-image recognition, we have adopted a similar evaluation method. We have chosen the performance of TPR at an FPR of 0.0001 as our standard. This standard assists us in understanding the model's performance under specific conditions more accurately.
+    In the task of document recognition, we have adopted a similar evaluation method. We have chosen the performance of TPR at an FPR of 0.0001 as our standard. This standard assists us in understanding the model's performance under specific conditions more accurately.
 
 3. **Zero-shot Testing**
 
@@ -306,9 +306,11 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 - In the process of connecting the Backbone and Head, using `nn.Flatten` to capture all information and integrating it into the feature encoding layer with `nn.Linear` proves to be the most effective approach. However, the downside is that it requires a substantial amount of parameters — in scenarios where lightweight models are crucial, even an increase of 1MB in model size is considered significant. To address this, we experimented with two approaches. Firstly, we tried using `nn.GlobalAvgPool2d` to gather all information and then integrated it into the feature encoding layer with `nn.Linear`. Secondly, we applied `nn.Conv2d` to reduce the number of channels to a quarter of the original count, a step we refer to as **Squeeze**, followed by using `nn.Flatten` in combination with `nn.Linear` for integration into the feature encoding layer. Our experiments show that the **Squeeze** strategy is the right choice. This strategy not only effectively reduces the model size but also maintains its performance.
 
+- When we used the `FastViT-T8` model as the architecture for feature extraction, we encountered a significant decrease in performance (TPR@FPR=1e-4 -> 0.33). Consequently, we switched to the similarly sized `EfficientNet_B0`, which did not exhibit the same issue. Despite carefully examining the `FastViT` architecture, we are currently unable to pinpoint the exact cause of this problem.
+
 ---
 
-## Before We start Training
+## Before We Start Training
 
 Based on the model we provide, we believe it can solve most application scenarios. However, we also understand that some scenarios may require enhanced model performance, necessitating the collection of specific datasets and model fine-tuning. We empathize that you may have the budget but not the time to customize adjustments to your specific environment. Therefore, you can contact us directly for consultation. Depending on the complexity of your project, we can arrange for engineers to develop custom solutions.
 
