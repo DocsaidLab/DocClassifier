@@ -11,6 +11,7 @@ import prettytable
 import torch
 import torch.nn as nn
 from docsaidkit.torch import ArcFace, CosFace
+from fitsne import FItSNE
 from sklearn.decomposition import PCA
 from torch.nn import Parameter
 from torchmetrics.classification import AUROC, Accuracy, BinaryROC
@@ -160,6 +161,7 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         labels = labels.detach().cpu().numpy()
 
         self.draw_pca(feats, labels)
+        self.draw_tsne(feats, labels)
         self.draw_roc(comb_scores, comb_labels)
 
         self.validation_step_outputs = []
@@ -249,6 +251,41 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         plt.grid(True)
         plt.savefig(
             self.preview_dir / f'epoch_{self.current_epoch}_pca.jpg', dpi=300)
+        plt.close()
+
+    def draw_tsne(self, feats, labels):
+
+        # 使用t-SNE進行特徵降維
+        feats = FItSNE(feats.astype('float'), perplexity=30, nthreads=8)
+
+        label_mapper = {
+            0: 'IDCardFront',
+            1: 'IDCardBack',
+            2: 'DriverLicenseFront',
+            3: 'HealthIDCard',
+            4: 'ResidentIDCardFront',
+            5: 'ResidentIDCardBack',
+            6: 'VehicleLicense'
+        }
+
+        unique_labels = list(label_mapper.keys())
+        colors = plt.cm.rainbow(np.linspace(0, 1, len(unique_labels)))
+        markers = ['o', 's', 'D', '^', 'v', '*', '<', '>', 'p', 'h']
+
+        # 繪圖
+        plt.figure(figsize=(10, 8))
+        for label in unique_labels:
+            mapped_label = label_mapper[label]
+            plt.scatter(feats[labels == label, 0], feats[labels == label, 1],
+                        color=colors[label], marker=markers[label % len(markers)], label=mapped_label, s=3)
+
+        plt.title("t-SNE Visualization of Features")
+        plt.xlabel("t-SNE Feature 1")
+        plt.ylabel("t-SNE Feature 2")
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(
+            self.preview_dir / f'epoch_{self.current_epoch}_tsne.jpg', dpi=300)
         plt.close()
 
     @ property
