@@ -1,3 +1,4 @@
+import random
 from typing import Any, Callable, Tuple, Union
 
 import albumentations as A
@@ -19,9 +20,9 @@ class DefaultImageAug:
         self.aug = A.Compose([
 
             DT.ShiftScaleRotate(
-                shift_limit=0.05,
-                scale_limit=0.05,
-                rotate_limit=10,
+                shift_limit=0.1,
+                scale_limit=0.1,
+                rotate_limit=15,
             ),
 
             A.OneOf([
@@ -30,6 +31,7 @@ class DefaultImageAug:
                 A.GaussianBlur(),
                 A.ZoomBlur(),
                 A.Defocus(radius=(3, 5)),
+                A.ImageCompression(quality_lower=0, quality_upper=50),
             ]),
 
             A.OneOf([
@@ -42,7 +44,19 @@ class DefaultImageAug:
                 ),
             ]),
 
-            A.ColorJitter()
+            A.OneOf([
+                A.ColorJitter(
+                    brightness=0.3,
+                    contrast=0.1,
+                    saturation=0.1,
+                ),
+                A.ToGray(),
+                A.ToSepia(),
+                A.ChannelShuffle(),
+                A.ChannelDropout(),
+                A.RGBShift(),
+                A.InvertImg(),
+            ]),
 
         ], p=p)
 
@@ -99,7 +113,7 @@ class SyncDataset:
                 interpolation=self.interpolation
             )
 
-            d01 = (label * 24, img)
+            d01 = (label, img)
             d02 = (label * 24 + 1, D.imrotate(img, 90))
             d03 = (label * 24 + 2, D.imrotate(img, 180))
             d04 = (label * 24 + 3, D.imrotate(img, 270))
@@ -107,26 +121,27 @@ class SyncDataset:
             d06 = (label * 24 + 5, cv2.flip(D.imrotate(img, 90), 0))
             d07 = (label * 24 + 6, cv2.flip(D.imrotate(img, 180), 0))
             d08 = (label * 24 + 7, cv2.flip(D.imrotate(img, 270), 0))
-            d09 = (label * 24 + 8, cv2.flip(img, 1))
-            d10 = (label * 24 + 9, cv2.flip(D.imrotate(img, 90), 1))
-            d11 = (label * 24 + 10, cv2.flip(D.imrotate(img, 180), 1))
-            d12 = (label * 24 + 11, cv2.flip(D.imrotate(img, 270), 1))
-            d13 = (label * 24 + 12, 255 - d01[1])
-            d14 = (label * 24 + 13, 255 - d02[1])
-            d15 = (label * 24 + 14, 255 - d03[1])
-            d16 = (label * 24 + 15, 255 - d04[1])
-            d17 = (label * 24 + 16, 255 - d05[1])
-            d18 = (label * 24 + 17, 255 - d06[1])
-            d19 = (label * 24 + 18, 255 - d07[1])
-            d20 = (label * 24 + 19, 255 - d08[1])
-            d21 = (label * 24 + 20, 255 - d09[1])
-            d22 = (label * 24 + 21, 255 - d10[1])
-            d23 = (label * 24 + 22, 255 - d11[1])
-            d24 = (label * 24 + 23, 255 - d12[1])
+            d09 = (label * 24 + 8, d01[1][:img.shape[0] // 2, :, :])
+            d10 = (label * 24 + 9, d02[1][:img.shape[0] // 2, :, :])
+            d11 = (label * 24 + 10, d03[1][:img.shape[0] // 2, :, :])
+            d12 = (label * 24 + 11, d04[1][:img.shape[0] // 2, :, :])
+            d13 = (label * 24 + 12, d05[1][:img.shape[0] // 2, :, :])
+            d14 = (label * 24 + 13, d06[1][:img.shape[0] // 2, :, :])
+            d15 = (label * 24 + 14, d07[1][:img.shape[0] // 2, :, :])
+            d16 = (label * 24 + 15, d08[1][:img.shape[0] // 2, :, :])
+            d17 = (label * 24 + 16, d01[1][img.shape[0] // 2:, :, :])
+            d18 = (label * 24 + 17, d02[1][img.shape[0] // 2:, :, :])
+            d19 = (label * 24 + 18, d03[1][img.shape[0] // 2:, :, :])
+            d20 = (label * 24 + 19, d04[1][img.shape[0] // 2:, :, :])
+            d21 = (label * 24 + 20, d05[1][img.shape[0] // 2:, :, :])
+            d22 = (label * 24 + 21, d06[1][img.shape[0] // 2:, :, :])
+            d23 = (label * 24 + 22, d07[1][img.shape[0] // 2:, :, :])
+            d24 = (label * 24 + 23, d08[1][img.shape[0] // 2:, :, :])
 
             dataset.extend([
-                d01, d02, d03, d04, d05, d06, d07, d08, d09, d10, d11, d12,
-                d13, d14, d15, d16, d17, d18, d19, d20, d21, d22, d23, d24,
+                d01, d02, d03, d04, d05, d06, d07, d08,
+                d09, d10, d11, d12, d13, d14, d15, d16,
+                d17, d18, d19, d20, d21, d22, d23, d24
             ])
 
         return dataset
@@ -180,8 +195,17 @@ class RealDataset:
         return len(self.dataset)
 
     def _build_dataset(self):
-        fs = D.get_files(self.root, suffix=['.jpg', '.png', '.jpeg'])
-        return [(f.parent.name, f) for f in fs if f.parent.name != 'Passport']
+        if (fp := DIR.parent / 'benchmark' / 'real_cache.json').is_file():
+            ds = D.load_json(fp)
+        else:
+            fs = D.get_files(self.root, suffix=['.jpg', '.png', '.jpeg'])
+            ds = [(f.parent.name, str(f))
+                  for f in fs if f.parent.name != 'Passport']
+            local_random = random.Random()
+            local_random.seed(42)
+            local_random.shuffle(ds)
+            D.dump_json(ds, fp)
+        return ds
 
     def __getitem__(self, idx):
         label, file = self.dataset[idx]

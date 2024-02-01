@@ -14,9 +14,11 @@ from docsaidkit.torch import ArcFace, CosFace
 from fitsne import FItSNE
 from sklearn.decomposition import PCA
 from torch.nn import Parameter
+from torch.nn.functional import normalize
 from torchmetrics.classification import AUROC, Accuracy, BinaryROC
 
 from .component import *
+from .partial_fc_v2 import PartialFC_V2
 
 DIR = D.get_curdir(__file__)
 
@@ -36,7 +38,19 @@ def get_num_classes(root: Union[str, Path] = None) -> int:
     default_root = DIR.parent.parent / 'data' / 'unique_pool' \
         if root is None else root
     fs = D.get_files(default_root, suffix=['.jpg'])
-    return (len(fs) + len(fs_ind_)) * 24  # with augmentation
+    return (len(fs) + len(fs_ind_)) * 24  # withs augmentation
+
+
+class IdentityMarginLoss(nn.Module):
+
+    def __init__(self, s=64.0, m=0.4):
+        super().__init__()
+        self.s = s
+        self.m = m
+
+    def forward(self, logits: torch.Tensor, labels: torch.Tensor):
+        logits *= self.s
+        return logits
 
 
 class ClassifierModel(DT.BaseMixin, L.LightningModule):
@@ -76,25 +90,19 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         loss_name = cfg_model['loss']['name']
         num_classes = get_num_classes()
         embed_dim = cfg_model['loss']['embed_dim']
-        self.margin_loss = globals()[loss_name](**cfg_model['loss']['options'])
-        self.weight = Parameter(torch.normal(0, 0.1, (num_classes, embed_dim)))
-        self.cross_entropy_loss = nn.CrossEntropyLoss()
+        margin_loss = globals()[loss_name](**cfg_model['loss']['options'])
+        self.pfc = PartialFC_V2(margin_loss, embed_dim,
+                                num_classes, sample_rate=0.3)
 
         # Setup metrics
         self.auc = AUROC(task='binary')
         self.roc = BinaryROC()
-        self.accuracy = Accuracy(task='multiclass', num_classes=num_classes)
 
         # for validation
         self.validation_step_outputs = []
 
-    def calc_loss(self, norm_embeddings, labels):
-        norm_weight_activated = normalize(self.weight)
-        logits = nn.functional.linear(norm_embeddings, norm_weight_activated)
-        logits = logits.float().clamp(-1, 1)
-        logits = self.margin_loss(logits, labels)
-        loss = self.cross_entropy_loss(logits, labels)
-        return loss, logits, norm_embeddings
+    def calc_loss(self, embeddings, labels):
+        return self.pfc(embeddings, labels)
 
     def calc_combinations(self, norm_embeddings, labels):
         combinations_pair = torch.tensor(
@@ -114,19 +122,13 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
 
     def training_step(self, batch, batch_idx):
         imgs, labels = batch
-        norm_embeddings = self.forward(imgs)
-        loss, logits, _ = self.calc_loss(norm_embeddings, labels)
-
-        acc = self.accuracy(logits, labels)
-
-        if batch_idx % self.preview_batch == 0:
-            self.preview(batch_idx, imgs, labels, logits)
+        embeddings = self.forward(imgs)
+        loss = self.calc_loss(embeddings, labels)
 
         self.log_dict(
             {
                 'lr': self.get_lr(),
                 'loss': loss,
-                'acc': acc,
             },
             prog_bar=True,
             on_step=True,
@@ -136,7 +138,8 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         imgs, labels = batch
-        norm_embeddings = self.forward(imgs)
+        embeddings = self.forward(imgs)
+        norm_embeddings = normalize(embeddings)
         comb_scores, comb_labels = \
             self.calc_combinations(norm_embeddings, labels)
         self.validation_step_outputs.append(
@@ -169,7 +172,7 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
     def draw_roc(self, comb_scores, comb_labels):
 
         auc = self.auc(comb_scores, comb_labels)
-        self.log('valid_auc', auc, prog_bar=True)
+        self.log('valid_auc', auc, prog_bar=True, sync_dist=True)
 
         fprs, tprs, ths = self.roc(comb_scores, comb_labels)
         fig, ax = plt.subplots()
@@ -198,7 +201,7 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         tpr_fpr_table.add_row(tpr_row)
         tpr_fpr_table.add_row(th_row)
 
-        self.log('valid_fpr@4', tpr_row[2], prog_bar=True)
+        self.log('valid_fpr@4', tpr_row[2], prog_bar=True, sync_dist=True)
 
         tpr_fpr_table_txt_fpath = str(
             self.preview_dir / f"tpr_fpr_table_{self.current_epoch:04d}.txt")

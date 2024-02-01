@@ -1,12 +1,9 @@
-import math
-from typing import List, Tuple
+from typing import List
 
-import docsaidkit.torch as DT
 import torch
 import torch.nn as nn
 from docsaidkit.torch import (GAP, Hsigmoid, build_backbone, build_transformer,
                               list_transformer, replace_module)
-from torch.nn.functional import normalize
 
 
 class Backbone(nn.Module):
@@ -53,7 +50,7 @@ class FeatureLearningHead(nn.Module):
         )
 
     def forward(self, xs: List[torch.Tensor]) -> torch.Tensor:
-        return normalize(self.embed_features(xs[-1]))
+        return self.embed_features(xs[-1])
 
 
 class FeatureLearningLNHead(nn.Module):
@@ -80,7 +77,7 @@ class FeatureLearningLNHead(nn.Module):
         )
 
     def forward(self, xs: List[torch.Tensor]) -> torch.Tensor:
-        return normalize(self.embed_features(xs[-1]))
+        return self.embed_features(xs[-1])
 
 
 class FeatureLearningGAPHead(nn.Module):
@@ -101,7 +98,7 @@ class FeatureLearningGAPHead(nn.Module):
         )
 
     def forward(self, xs: List[torch.Tensor]) -> torch.Tensor:
-        return normalize(self.embed_features(xs[-1]))
+        return self.embed_features(xs[-1])
 
 
 class FeatureLearningSqueezeHead(nn.Module):
@@ -135,4 +132,4 @@ class FeatureLearningSqueezeHead(nn.Module):
 
     def forward(self, xs: List[torch.Tensor]) -> torch.Tensor:
         feats = self.squeeze_feats(xs[-1])
-        return normalize(self.embed_feats(feats))
+        return self.embed_feats(feats)

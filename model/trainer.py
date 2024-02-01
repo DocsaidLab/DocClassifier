@@ -14,6 +14,8 @@ cv2.setNumThreads(0)
 
 torch.set_num_threads(1)
 
+torch.set_float32_matmul_precision('medium')
+
 
 def main_docclassifier_train(cfg_name: str):
     model, cfg = DT.load_model_from_config(
