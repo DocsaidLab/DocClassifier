@@ -110,7 +110,7 @@ callbacks:
       mode: max
       verbose: True
       save_last: True
-      save_top_k: 5
+      save_top_k: 10
   - name: LearningRateMonitor
     options:
       logging_interval: step

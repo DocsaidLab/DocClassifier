@@ -28,17 +28,18 @@ model:
       features_only: True
       replace_components: True
   head:
-    name: FeatureLearningGAPHead
+    name: FeatureLearningLNHead
     options:
       in_dim: 256
-      embed_dim: 512
+      embed_dim: 256
+      feature_map_size: 4
   loss:
-    name: ArcFace
+    name: CosFace
     options:
       s: 64
       m: 0.4
     num_classes: -1
-    embed_dim: 512
+    embed_dim: 256
 
 onnx:
   name: WarpFeatureLearning
@@ -109,7 +110,7 @@ callbacks:
       mode: max
       verbose: True
       save_last: True
-      save_top_k: 5
+      save_top_k: 10
   - name: LearningRateMonitor
     options:
       logging_interval: step

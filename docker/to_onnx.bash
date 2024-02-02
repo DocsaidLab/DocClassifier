@@ -11,6 +11,7 @@ EOF
 docker run \
     -e USER_ID=$(id -u) \
     -e GROUP_ID=$(id -g) \
+    --gpus all \
     --shm-size=64g \
     --ipc=host --net=host \
     -v $PWD/DocClassifier:/code/DocClassifier \

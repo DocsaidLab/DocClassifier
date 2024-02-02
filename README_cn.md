@@ -15,13 +15,13 @@
     <img src="./docs/title.jpg" width="800">
 </div>
 
-DocClassifier 是一個創新的文件圖像分類系統，它的設計靈感源自於人臉辨識技術，專門針對傳統分類器在處理文本圖像時面臨的限制進行了深度優化。這個系統非常適合於需要快速辨識和註冊新文本類型的場景，如金融科技、銀行業和共享經濟等多個領域。
+DocClassifier 是一個文件圖像分類系統，旨在解決傳統分類器處理文本圖像時遇到的問題。它借鑑了人臉辨識技術，尤其適合於需要迅速辨識和新增文本類型的場合，例如在金融科技、銀行和共享經濟等領域中。
 
-我們的系統採用先進的特徵學習模型架構，並結合了 CosFace 和 ArcFace 等創新的損失函數，有效地實現了在無需預設大量分類頭類別的情況下進行精確分類。為了訓練此模型，我們自主收集了約 800 張多樣化的文本圖像及用於場景分類的 indoor dataset，並透過影像增強技術進行數據集的擴充，組成約 40 萬類的規模，以確保模型能學習到豐富的特徵。
+系統使用了 PartialFC 特徵學習架構，結合了 CosFace 和 ArcFace 等技術，使其能在沒有預先設定大量分類的情況下，精準地進行分類。為了讓模型能學習到多樣化的特徵，我們收集了大約 650 張文本圖像和 16000 張用於場景分類的圖像，並通過圖像增強技術擴大數據集至約 40 萬類。
 
-技術層面上，我們選用了 PyTorch 作為主要訓練框架，並利用 ONNXRuntime 進行模型推論，保證了模型在 CPU 和 GPU 上的高效運行。此外，我們還支援將模型轉換成 ONNX 格式，以便於在不同的平台上進行靈活部署。對於需要進行模型量化的場景，我們提供了基於 ONNXRuntime API 的靜態量化功能，進一步提高了模型的應用靈活性和效能。
+在技術選擇上，PyTorch 被用作主要的訓練平台，並通過 ONNXRuntime 進行模型的推論，確保了模型在 CPU 和 GPU 上都能高效運行。我們也支持將模型轉換為 ONNX 格式，方便在不同平台上部署。針對需要模型量化的情況，我們提供了基於 ONNXRuntime API 的量化功能，以提高模型的運行效率和靈活性。
 
-在驗證資料集上，我們的模型基於 zero-shot 的訓練策略展示了超過 99% 的準確度。最重要的是，當需要新增證件類型時，DocClassifier 可以實現無需重新訓練即可快速註冊的功能，類似於人臉辨識系統中的人臉註冊流程，這個設計大幅提升了系統的適應性和擴展性。此外，我們的模型在實際應用中不僅達到了即時（Real-Time）的推論速度，更超越了行業標準，滿足了大多數應用場景的需求。
+在測試中，我們的模型展示了超過 99% 的準確率（TPR@FPR=1e-1），使用了 zero-shot 訓練策略。重要的是，DocClassifier 允許快速新增證件類型而無需重新訓練，類似於人臉辨識系統的註冊過程，這提高了系統的適應性和擴展性。在實際應用中，我們的模型不僅實現了即時推論速度，還滿足了絕大多數應用場景的需求。
 
 ---
 
@@ -218,7 +218,7 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 2. **TPR@FPR 閾值表**
 
-    TPR@FPR 閾值表是在人臉辨識領域中廣泛使用的一種關鍵評估工具，其主要用途是衡量模型在不同閾值設定下的表現。這種表格是基於 ROC 曲線衍生出來的，提供了一種直觀且精確的方法來評估模型效能。例如，若目標是在FPR（假陽性率）為0.01時達到至少TPR（真陽性率）0.9的效能，我們可以透過 TPR-FPR 閾值表來確定相對應的閾值。這個閾值進而指導模型推論的過程。
+    TPR@FPR 閾值表是在人臉辨識領域中廣泛使用的一種關鍵評估工具，其主要用途是衡量模型在不同閾值設定下的表現。這種表格是基於 ROC 曲線衍生出來的，提供了一種直觀且精確的方法來評估模型效能。例如，若目標是在FPR（假陽性率）為 0.01 時達到至少 TPR（真陽性率）0.9 的效能，我們可以透過 TPR-FPR 閾值表來確定相對應的閾值。這個閾值進而指導模型推論的過程。
 
     在文本圖像辨識的任務中，我們也採納了類似的評估方法。我們選擇了 TPR 在 FPR 為 0.0001 時的表現作為標準，這樣的標準幫助我們更準確地理解模型在特定條件下的效能。
 
@@ -230,86 +230,181 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 ### 評估結果
 
-- Num of classes: 394,080
-- Num of epochs: 20
-- Num of data per epoch: 2,560,000
-- Batch Size: 256
-- Optimizer: AdamW
-- Setting:
-    - gap: GlobalAveragePooling2d -> Linear
-    - flatten: Flatten -> Linear
-    - squeeze: Conv2d -> Flatten -> Linear
+- **Global settings**
 
-<div align="center">
+    - Num of classes: 394,080
+    - Num of epochs: 20
+    - Num of data per epoch: 2,560,000
+    - Batch Size: 512
+    - Optimizer: AdamW
+    - Setting:
+        - flatten: Flatten -> Linear (Default)
+        - gap: GlobalAveragePooling2d -> Linear
+        - squeeze: Conv2d -> Flatten -> Linear
 
-| Name | TPR@FPR=1e-4 | ROC | FLOPs (G) | Size (MB) |
-| --- | :---: | :---: | :---: | :---: |
-| lcnet050-f128-r96-ln-arc | 0.800 | 0.9932 | 0.029 | 2.33 |
-| lcnet050-f256-r128-ln-arc | 0.951 | 0.9972 | 0.053 | 5.54 |
-| lcnet050-f256-r128-bn-arc | 0.876 | 0.9947 | 0.053 | 5.54 |
-| lcnet050-f256-r128-ln-arc-from-scratch | 0.330 | 0.9501 | 0.053 | 5.54 |
-| lcnet050-f512-r128-ln-arc-gap | 0.717 | 0.9876 | 0.051 | 2.67 |
-| lcnet050-f256-r128-ln-arc-squeeze | 0.953 | 0.9975 | 0.052 | 2.46 |
-| lcnet050-f256-r128-ln-cos-squeeze | 0.942 | 0.9975 | 0.052 | 2.46 |
+- **綜合比較**
 
+    <div align="center">
 
-</div>
+    | Name | TPR@FPR=1e-4 | ROC | FLOPs (G) | Size (MB) |
+    | --- | :---: | :---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-arc | 0.754 | 0.9951 | 0.053 | 5.54 |
+    | lcnet050-f256-r128-ln-softmax | 0.663 | 0.9907 | 0.053 | 5.54 |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** | 0.053 | 5.54 |
+    | lcnet050-f256-r128-ln-cos-from-scratch | 0.141 | 0.9273 | 0.053 | 5.54 |
+    | lcnet050-f256-r128-ln-cos-squeeze | 0.772 | 0.9958 | 0.052 | **2.46** |
+    | lcnet050-f256-r128-bn-cos | 0.721 | 0.992 | 0.053 | 5.54 |
+    | lcnet050-f128-r96-ln-cos | 0.713 | 0.9944 | 0.029 | 2.33 |
+    | lcnet050-f256-r128-ln-cos-gap | 0.480 | 0.9762 | 0.053 | 2.67 |
+    | efficientnet_b0-f256-r128-ln-cos | 0.682 | 0.9931 | 0.242 | 19.89 |
+
+    </div>
+
+- **目標類別數量比較**
+
+    <div>
+
+    | Name | Num_Classes | TPR@FPR=1e-4 | ROC |
+    | --- | ---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-arc |  16,256 | 0.615 | 0.9867 |
+    | lcnet050-f256-r128-ln-arc | 130,048 | 0.666 | 0.9919 |
+    | lcnet050-f256-r128-ln-arc | 390,144 | **0.754** | **0.9951** |
+
+    </div>
+
+    - 類別數量越多，模型效果越好。
+
+- **MarginLoss 比較**
+
+    <div>
+
+    | Name | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: |
+    | lcnet050-f256-r128-ln-softmax | 0.663 | 0.9907 |
+    | lcnet050-f256-r128-ln-arc | 0.754 | 0.9951 |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** |
+
+    </div>
+
+    - 單獨使用 CosFace 或 ArcFace 時，ArcFace 效果好。
+    - 搭配 PartialFC 後，CosFace 效果好。
+
+- **BatchNorm vs LayerNorm**
+
+    <div>
+
+    | Name | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: |
+    | lcnet050-f256-r128-bn-cos | 0.721 | 0.9921 |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** |
+
+    </div>
+
+    - 使用 LayerNorm 效果優於 BatchNorm。
+
+- **Pretrain vs From-Scratch**
+
+    <div>
+
+    | Name | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos-from-scratch | 0.141 | 0.9273 |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** |
+
+    </div>
+
+    - 使用 Pretrain 是必要的，可以節省我們大量的時間。
+
+- **降低模型規模的方法**
+
+    <div>
+
+    | Name | TPR@FPR=1e-4 | ROC | Size (MB) | FLOPs (G) |
+    | --- | :---: | :---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** |  5.54 | 0.053 |
+    | lcnet050-f256-r128-ln-cos-squeeze | 0.772 | 0.9958 | **2.46** | **0.053** |
+    | lcnet050-f256-r128-ln-cos-gap | 0.480 | 0.9762 | 2.67 | 0.053 |
+    | lcnet050-f128-r96-ln-cos | 0.713 | 0.9944 | 2.33 | 0.029 |
+
+    </div>
+
+    - 方法：
+        - flatten: Flatten -> Linear (Default)
+        - gap: GlobalAveragePooling2d -> Linear
+        - squeeze: Conv2d -> Flatten -> Linear
+        - 降低解析度和特徵維度
+    - 使用 squeeze 方法，雖犧牲一點效能，但減少一半的模型大小。
+    - 使用 gap 方法，準確度大幅降低。
+    - 降低解析度和特徵維度，準確度小幅降低。
+
+- **加大 Backbone**
+
+    <div>
+
+    | Name | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** |
+    | efficientnet_b0-f256-r128-ln-cos | 0.682 | 0.9931 |
+
+    </div>
+
+    - 參數量增加，效果降低，我們認為這個跟訓練資料集的資料多樣性有關。由於我們所採用的方式無法提供太多的多樣性，因此增加參數量並不能提高效果。
 
 ---
 
-- **lcnet050-f256-r128-ln-arc-squeeze results**
+- **lcnet050-f256-r128-ln-cos results**
 
-    - **TPR @ FPR = 0.0001: 0.953**
-
-        <div align="center">
-
-        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
-        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.922  |  0.953  |  0.974  |  0.989  |  0.996  |   1.0   |
-        | Threshold |  0.675  |  0.657  |  0.636  |  0.610  |  0.572  |  0.371  |
-
-        </div>
-
-    - **ROC Curve & PCA**
-
-        <div align="center">
-            <img src="./docs/arcface_result.jpg" width="800">
-        </div>
-
-- **lcnet050-f256-r128-ln-cos-squeeze Results**
-
-    - **TPR @ FPR = 0.0001: 0.942**
+    - **TPR@FPR=1e-4: 0.784**
 
         <div align="center">
 
         |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
         | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.913  |  0.942  |  0.970  |  0.987  |  0.995  |   1.0   |
-        | Threshold |  0.698  |  0.681  |  0.657  |  0.627  |  0.586  |  0.351  |
+        |    TPR    |  0.673  |  0.784  |  0.879  |  0.950  |  0.992  |   1.0   |
+        | Threshold |  0.751  |  0.726  |  0.697  |  0.663  |  0.608  |  0.341  |
 
         </div>
 
-    - **ROC Curve & PCA**
+    - **TSNE & PCA & ROC Curve**
 
         <div align="center">
             <img src="./docs/cosface_result.jpg" width="800">
         </div>
 
+- **lcnet050-f256-r128-ln-cos-squeeze results**
+
+    - **TPR@FPR=1e-4: 0.772**
+
+        <div align="center">
+
+        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
+        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+        |    TPR    |  0.674  |  0.772  |  0.864  |  0.940  |  0.989  |   1.0   |
+        | Threshold |  0.726  |  0.703  |  0.677  |  0.645  |  0.594  |  0.358  |
+
+        </div>
+
+    - **TSNE & PCA & ROC Curve**
+
+        <div align="center">
+            <img src="./docs/cosface_result_squeeze.jpg" width="800">
+        </div>
+
 ### 結果討論
+
+- 你可能會考慮要用什麼 Margin loss，可能是 CosFace 或是 ArcFace。但不管用什麼，請一定要搭配 [PartialFC](https://arxiv.org/abs/2203.15565)，訓練速度大幅提高，收斂結果穩定，且效能更好。在此我們也特別感謝 [insightface](https://github.com/deepinsight/insightface) 的實作，若您有空的話不妨去幫他們點個 star。
 
 - 對於文本圖像的種類，一開始我們使用了約 500 種，後來增加到 800 種、10000 種等，最後決定納入 indoor dataset 作為基底，把整體的分類種類增加到約 40 萬種。這裡的結論和人臉辨識的任務一致：模型的效果和訓練資料的多樣性有很大的關係，因此我們需要使用大量的資料集，以確保模型能夠學習到足夠的特徵，並且能夠有效地區分不同的類別。
 
+- 經實驗發現，採用**低精度訓練**可增強模型的泛化能力。我們認為這是因為模型極易發生過度擬合，而低精度訓練有助於減緩此問題。直接在 `trainer` 上設置低精度訓練並不可行，原因是部分運算子在 CUDA 上不支持此設定。因此，我們採用了 `torch.set_float32_matmul_precision('medium')` 方法來實現低精度訓練。
+
 - 經過實驗，在文本圖像分類的任務中，採用 LayerNorm 比 BatchNorm 效果更好，我們認為是因為文本圖像（如街道標誌、文件圖像等）通常包含著高度變異性的特徵，如不同字體、大小、背景雜訊等。LayerNorm 通過對每個樣本進行獨立標準化，幫助模型更有效地處理這些變異。而在人臉辨識中，使用 BatchNorm 有助於模型學習如何從高度相似的臉部圖像中辨識出細微的差異。這對於確保模型在各種不同條件（如照明、角度、表情變化等）下都能有效地辨識臉部特徵。
 
-- Benchmark 資料集是客戶的隱私資料，我們不得以任何形式或方法公開。但我們可以進行一些客觀的討論 —— 這份驗證資料太過於簡單了。相比於人臉辨識常用的 IJB-C 評估協議，我們認為這份資料集的難度遠遠不夠，因此我們在未來的版本中，會嘗試找到更困難的方式，以確保模型的效果能夠更加客觀。
-
-- 我們在 CosFace 上觀察到訓練後期過擬合的現象，這導致模型在測試集上的效果不如 ArcFace 穩定。我們認為這是因為 ArcFace 的理論基礎對於特徵生成有更高的穩定度，因此我們最終選擇了 ArcFace 作為我們的預設模型架構。
+- 我們在單獨使用 CosFace 和 ArcFace 的時候，發現 ArcFace 的效果比較好；但是搭配了 PartialFC 之後情況截然不同，反而是 CosFace 效果更好。
 
 - Pretrain 是必要的，我們嘗試過不使用 Pretrain，但效果非常差。其中原因可能是因為我們所提供的資料集的多樣性仍然不夠，因此需要使用 Pretrain 來幫助模型學習到更多的特徵。我們再次感謝 timm 所提供的模型，這些模型幫助我們節省了大量的時間和人力。
 
 - 在 Backbone 與 Head 串接的過程中，使用 `nn.Flatten` 取得所有資訊並使用 `nn.Linear` 整合到特徵編碼層效果是最好的！但是缺點是需要佔用大量的參數 —— 在輕量模型的場景中，增加 1MB 的模型大小都是一件令人髮指的事情。為此我們嘗試了兩個方向，其一：使用 `nn.GlobalAvgPool2d` 取得所有資訊並使用 `nn.Linear` 整合到特徵編碼層；其二：使用 `nn.Conv2d` 先將通道數降維至原本的 1/4 ，這邊我們稱為 Squeeze，接著再使用 `nn.Flatten` 搭配 `nn.Linear` 整合到特徵編碼層。經過實驗，使用 Squeeze 的策略是對的。這個策略不僅能夠有效地減少模型大小，同時維持模型的效能。
-
-- 當我們使用 `FastViT-T8` 的模型作為特徵提取的架構時，發現模型出現效能嚴重降低的問題（TPR@FPR=1e-4 -> 0.33）。於是我們換成規模相近的 `EfficientNet_B0`，卻沒有出現相同的問題。儘管我們仔細審視 `FastViT` 的架構，但目前仍沒有辦法鎖定造成這個問題的確切原因。
 
 ---
 
@@ -401,6 +496,20 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
     這裡，$`\theta_{y_i}`$ 和 $`\theta_j`$ 分別是 $`x_i`$ 和 $`W_{y_i}`$ 之間的角度，以及 $`x_i`$ 和其他類權重向量之間的角度。$`s`$ 是控制決策邊界陡度的縮放參數。
 
+### PartialFC
+
+<div align="center">
+    <img src="./docs/pfc_arch.jpg" width="800">
+</div>
+
+- **參考文獻**：[Partial FC: Training 10 Million Identities on a Single Machine](https://arxiv.org/pdf/2010.05222.pdf)
+
+    - PartialFC 的分散式實現的結構。 k 表示 GPU 的數量。
+    - Allgather：從所有GPU收集資料並將組合資料分發到所有 GPU。
+    - Allreduce：對資料進行求和並將結果分發到所有 GPU。
+
+PartialFC 是一種高效的分布式抽樣算法，專為解決在大規模人臉辨識系統中的記憶體限制問題而設計。這種方法通過只對一部分隨機選擇的類別進行訓練，有效降低了對 GPU 記憶體的需求，同時保持了辨識精度。利用 PartialFC，即便是使用有限的硬件資源，也能處理數以千萬計的身份辨識任務。這種算法的實現不僅提高了訓練效率，還為大規模人臉辨識技術的發展提供了新的可能性。
+
 ---
 
 ## 資料集介紹及預處理
@@ -409,33 +518,22 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 除了網路搜尋之外，我們從以下資料集中收集了一些文本圖像：
 
-- **Cards Image Dataset-Classification**
-    - [**Dataset**](https://www.kaggle.com/datasets/gpiosenka/cards-image-datasetclassification?resource=download)
-    - 這是一個非常高品質的撲克牌圖像資料集。 所有影像均為 jpg 格式，尺寸為 224 X 224 X 3。 資料集中的所有影像都已裁剪，因此僅存在單一卡片的影像，並且該卡片佔據了影像中超過 50% 的像素。 有 7624 個訓練影像、265 個測試影像和 265 個驗證影像。 訓練、測試和驗證目錄分為 53 個子目錄，每個子目錄對應 53 種類型的卡片。 該資料集還包括一個可用於載入資料集的 csv 檔案。
-
-    我們沒有納入該資料集的所有資料，因為大多數的樣本相似性極高，沒有辦法達到我們的訓練需求，因此我們僅僅納入了以下幾個類別：
-
-    - Joker
-    - All type of King
-    - All type of Queen
-    - All type of Jack
-
-    我們從每個類別中，手動挑選了 5~10 張圖片，這個部分總共收集了約 830 張文本影像作為基底。
-
 - **Indoor Scenes**
    - [**Indoor**](https://web.mit.edu/torralba/www/indoor.html)
    - 該資料集包含 67 個室內類別，總共 15,620 張圖像。圖像數量因類別而異，但每個類別至少有 100 張圖像。所有圖片均為 jpg 格式。
 
    我們從該資料集中剔除了少數損壞的影像，並將每一張影像都定義為一個類別，共取得 15,590 張影像。
 
-最後，我們收集了 16,420 張影像作為基底，並定義以下變換方式：
+最後，我們收集了 16,256 張影像作為基底，並定義以下變換方式：
 
 - 原始影像
 - 旋轉 90 度
 - 旋轉 180 度
 - 旋轉 270 度
 
-搭配水平翻轉，垂直翻轉和負片處理，一張影像可以構成 24 種類別，因此我們共約有 40 萬種文本類別。
+搭配「垂直翻轉」和「裁切處理」，一張影像可以構成 24 種類別，因此我們共約有 40 萬種文本類別。
+
+請注意這裡「垂直翻轉」和「水平翻轉」擇一即可，因為搭配旋轉 90 度、180 度、270 度，可以得到相同的結果。
 
 以下簡單展示一下擴充邏輯：
 
@@ -461,7 +559,7 @@ def _build_dataset(self):
             interpolation=self.interpolation
         )
 
-        d01 = (label * 24, img)
+        d01 = (label, img)
         d02 = (label * 24 + 1, D.imrotate(img, 90))
         d03 = (label * 24 + 2, D.imrotate(img, 180))
         d04 = (label * 24 + 3, D.imrotate(img, 270))
@@ -469,26 +567,27 @@ def _build_dataset(self):
         d06 = (label * 24 + 5, cv2.flip(D.imrotate(img, 90), 0))
         d07 = (label * 24 + 6, cv2.flip(D.imrotate(img, 180), 0))
         d08 = (label * 24 + 7, cv2.flip(D.imrotate(img, 270), 0))
-        d09 = (label * 24 + 8, cv2.flip(img, 1))
-        d10 = (label * 24 + 9, cv2.flip(D.imrotate(img, 90), 1))
-        d11 = (label * 24 + 10, cv2.flip(D.imrotate(img, 180), 1))
-        d12 = (label * 24 + 11, cv2.flip(D.imrotate(img, 270), 1))
-        d13 = (label * 24 + 12, 255 - d01[1])
-        d14 = (label * 24 + 13, 255 - d02[1])
-        d15 = (label * 24 + 14, 255 - d03[1])
-        d16 = (label * 24 + 15, 255 - d04[1])
-        d17 = (label * 24 + 16, 255 - d05[1])
-        d18 = (label * 24 + 17, 255 - d06[1])
-        d19 = (label * 24 + 18, 255 - d07[1])
-        d20 = (label * 24 + 19, 255 - d08[1])
-        d21 = (label * 24 + 20, 255 - d09[1])
-        d22 = (label * 24 + 21, 255 - d10[1])
-        d23 = (label * 24 + 22, 255 - d11[1])
-        d24 = (label * 24 + 23, 255 - d12[1])
+        d09 = (label * 24 + 8, d01[1][:img.shape[0] // 2, :, :])
+        d10 = (label * 24 + 9, d02[1][:img.shape[0] // 2, :, :])
+        d11 = (label * 24 + 10, d03[1][:img.shape[0] // 2, :, :])
+        d12 = (label * 24 + 11, d04[1][:img.shape[0] // 2, :, :])
+        d13 = (label * 24 + 12, d05[1][:img.shape[0] // 2, :, :])
+        d14 = (label * 24 + 13, d06[1][:img.shape[0] // 2, :, :])
+        d15 = (label * 24 + 14, d07[1][:img.shape[0] // 2, :, :])
+        d16 = (label * 24 + 15, d08[1][:img.shape[0] // 2, :, :])
+        d17 = (label * 24 + 16, d01[1][img.shape[0] // 2:, :, :])
+        d18 = (label * 24 + 17, d02[1][img.shape[0] // 2:, :, :])
+        d19 = (label * 24 + 18, d03[1][img.shape[0] // 2:, :, :])
+        d20 = (label * 24 + 19, d04[1][img.shape[0] // 2:, :, :])
+        d21 = (label * 24 + 20, d05[1][img.shape[0] // 2:, :, :])
+        d22 = (label * 24 + 21, d06[1][img.shape[0] // 2:, :, :])
+        d23 = (label * 24 + 22, d07[1][img.shape[0] // 2:, :, :])
+        d24 = (label * 24 + 23, d08[1][img.shape[0] // 2:, :, :])
 
         dataset.extend([
-            d01, d02, d03, d04, d05, d06, d07, d08, d09, d10, d11, d12,
-            d13, d14, d15, d16, d17, d18, d19, d20, d21, d22, d23, d24,
+            d01, d02, d03, d04, d05, d06, d07, d08,
+            d09, d10, d11, d12, d13, d14, d15, d16,
+            d17, d18, d19, d20, d21, d22, d23, d24
         ])
 
     return dataset
@@ -534,15 +633,43 @@ class DefaultImageAug:
         self.aug = A.Compose([
 
             DT.ShiftScaleRotate(
-                shift_limit=0.05,
-                scale_limit=0.05,
-                rotate_limit=10,
+                shift_limit=0.1,
+                scale_limit=0.1,
+                rotate_limit=15,
             ),
 
             A.OneOf([
                 A.MotionBlur(),
+                A.MedianBlur(),
+                A.GaussianBlur(),
+                A.ZoomBlur(),
                 A.Defocus(radius=(3, 5)),
-            ], p=p),
+                A.ImageCompression(quality_lower=0, quality_upper=50),
+            ]),
+
+            A.OneOf([
+                A.ISONoise(),
+                A.GaussNoise(),
+                A.MultiplicativeNoise(
+                    multiplier=[0.5, 1.5],
+                    elementwise=True,
+                    per_channel=True
+                ),
+            ]),
+
+            A.OneOf([
+                A.ColorJitter(
+                    brightness=0.3,
+                    contrast=0.1,
+                    saturation=0.1,
+                ),
+                A.ToGray(),
+                A.ToSepia(),
+                A.ChannelShuffle(),
+                A.ChannelDropout(),
+                A.RGBShift(),
+                A.InvertImg(),
+            ]),
 
         ], p=p)
 
@@ -552,10 +679,10 @@ class DefaultImageAug:
 ```
 
 - **ShiftScaleRotate**
-  - 由於我們已經使用了翻轉，旋轉 90 度的方式來擴充類別，因此我們不能在這裡使用翻轉，大幅旋轉等的方式來擴充類別，否則會造成類別衝突。在這裡，只能稍微地（正負 10 度和 5% 縮放）做一些旋轉和縮放的增強。
+  - 由於我們已經使用了翻轉，旋轉 90 度的方式來擴充類別，因此我們不能在這裡使用翻轉，大幅旋轉等的方式來擴充類別，否則會造成類別衝突。在這裡，只能稍微地（正負 15 度和 10% 縮放）做一些旋轉和縮放的增強。
 
 - **Others**
-  - 我們做了一些模糊雜訊的干擾，且不對顏色進行變化，因為在我們的邏輯中，相同形狀但顏色不同的影像，會被視為不同的類別。
+  - 我們做了一些模糊、雜訊、亮度和色彩等的干擾。
 
 ---
 

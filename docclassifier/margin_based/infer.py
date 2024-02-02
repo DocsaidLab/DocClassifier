@@ -34,17 +34,17 @@ def preprocess(
 class Inference:
 
     configs = {
-        'lcnet050_arcface': {
-            'model_path': 'lcnet050_arcface_f256_r128_squeeze_fp32.onnx',
-            'file_id': '1EweB5cpbhU8x65AoJpwCAP9ou96HkDZL',
-            'img_size_infer': (128, 128),
-            'threshold': 0.657  # FPR=0.0001
-        },
         'lcnet050_cosface': {
-            'model_path': 'lcnet050_cosface_f256_r128_squeeze_fp32.onnx',
-            'file_id': '1rBvUp-u42lgLhs1hlhLj13NDQcKi8aE1',
+            'model_path': 'lcnet050_cosface_f256_r128_fp32.onnx',
+            'file_id': '1wTER45MAVuNS93nGu5x21jOEGkdp25Wn',
             'img_size_infer': (128, 128),
-            'threshold': 0.681  # FPR=0.0001
+            'threshold': 0.663  # FPR=0.01
+        },
+        'lcnet050_cosface_squeeze': {
+            'model_path': 'lcnet050_cosface_f256_r128_squeeze_fp32.onnx',
+            'file_id': '1xDr0TuQlYfZsGgvSd0rFCCT6LMnQU1A4',
+            'img_size_infer': (128, 128),
+            'threshold': 0.645  # FPR=0.01
         },
     }
 
@@ -52,7 +52,7 @@ class Inference:
         self,
         gpu_id: int = 0,
         backend: D.Backend = D.Backend.cpu,
-        model_cfg: str = 'lcnet050_arcface',
+        model_cfg: str = 'lcnet050_cosface',
         threshold: float = None,
         register_root: Union[str, D.Path] = None,
         **kwargs

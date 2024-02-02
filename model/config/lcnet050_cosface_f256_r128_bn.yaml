@@ -31,7 +31,7 @@ model:
     name: FeatureLearningHead
     options:
       in_dim: 256
-      embed_dim: 128
+      embed_dim: 256
       feature_map_size: 4
   loss:
     name: CosFace
@@ -39,7 +39,7 @@ model:
       s: 64
       m: 0.4
     num_classes: -1
-    embed_dim: 128
+    embed_dim: 256
 
 onnx:
   name: WarpFeatureLearning
@@ -68,7 +68,7 @@ dataset:
     name: SyncDataset
     options:
       aug_ratio: 1
-      length_of_dataset: 5120000
+      length_of_dataset: 2560000
   valid_options:
     name: RealDataset
     options:
@@ -106,11 +106,11 @@ lr_scheduler:
 callbacks:
   - name: ModelCheckpoint
     options:
-      monitor: valid_auc
+      monitor: valid_fpr@4
       mode: max
       verbose: True
       save_last: True
-      save_top_k: 5
+      save_top_k: 10
   - name: LearningRateMonitor
     options:
       logging_interval: step

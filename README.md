@@ -15,13 +15,13 @@
     <img src="./docs/title.jpg" width="800">
 </div>
 
-DocClassifier is an innovative document image classification system, inspired by facial recognition technology and deeply optimized to address the limitations traditional classifiers face when dealing with text images. This system is particularly suited for scenarios that require rapid identification and registration of new text types, such as in fintech, banking, and the sharing economy sectors.
+DocClassifier is a document image classification system designed to address challenges encountered by traditional classifiers when processing text images. Drawing inspiration from facial recognition technology, it is particularly well-suited for scenarios requiring quick identification and addition of text types, such as in fintech, banking, and the sharing economy.
 
-Our system employs an advanced feature learning model architecture, integrating innovative loss functions like CosFace and ArcFace. This approach effectively enables precise classification without the need for a large number of predefined category heads. To train this model, we independently collected about 800 diverse text images and the indoor dataset for scene classification. We expanded the dataset through image augmentation techniques, culminating in a scale of approximately 400,000 categories. This ensures that the model can learn a rich array of features.
+The system employs the PartialFC feature learning architecture, incorporating technologies like CosFace and ArcFace, enabling it to classify accurately without the need for a pre-set large number of categories. To allow the model to learn diverse features, we collected approximately 650 text images and 16,000 images for scene classification, expanding the dataset to about 400,000 categories through image augmentation techniques.
 
-Technically, we have chosen PyTorch as our primary training framework and utilized ONNXRuntime for model inference, ensuring efficient operation of the model on both CPU and GPU. Additionally, we support converting the model into ONNX format for flexible deployment across various platforms. For scenarios requiring model quantization, we offer static quantization functionality based on the ONNXRuntime API, further enhancing the model's application flexibility and performance.
+In terms of technology selection, PyTorch is used as the primary training platform, with ONNXRuntime facilitating model inference to ensure efficient operation on both CPUs and GPUs. We also support converting models to ONNX format for easy deployment across different platforms. For scenarios requiring model quantization, we offer quantization capabilities based on the ONNXRuntime API to enhance the model's operational efficiency and flexibility.
 
-On our validation dataset, our model demonstrated over 99% accuracy based on a zero-shot training strategy. Most importantly, when new document types need to be added, DocClassifier can quickly register them without the need for retraining, similar to the face registration process in facial recognition systems, significantly enhancing the system's adaptability and scalability. Furthermore, our model not only achieves real-time inference speeds in practical applications but also surpasses industry standards, meeting the needs of most application scenarios.
+In testing, our model demonstrated an accuracy rate of over 99% using a zero-shot training strategy (TPR@FPR=1e-1). Importantly, DocClassifier allows for the quick addition of document types without the need for retraining, akin to the registration process in facial recognition systems, thereby enhancing the system's adaptability and scalability. In practical applications, our model not only achieved real-time inference speeds but also met the needs of the vast majority of application scenarios.
 
 ---
 
@@ -229,84 +229,181 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 ### Evaluation Results
 
-- Num of classes: 394,080
-- Num of epochs: 20
-- Num of data per epoch: 2,560,000
-- Batch Size: 256
-- Optimizer: AdamW
-- Setting:
-    - gap: GlobalAveragePooling2d -> Linear
-    - flatten: Flatten -> Linear
-    - squeeze: Conv2d -> Flatten -> Linear
+- **Global settings**
 
-<div align="center">
+    - Num of classes: 394,080
+    - Num of epochs: 20
+    - Num of data per epoch: 2,560,000
+    - Batch Size: 512
+    - Optimizer: AdamW
+    - Setting:
+        - flatten: Flatten -> Linear (Default)
+        - gap: GlobalAveragePooling2d -> Linear
+        - squeeze: Conv2d -> Flatten -> Linear
 
-| Name | TPR@FPR=1e-4 | ROC | FLOPs (G) | Size (MB) |
-| --- | :---: | :---: | :---: | :---: |
-| lcnet050-f128-r96-ln-arc | 0.800 | 0.9932 | 0.029 | 2.33 |
-| lcnet050-f256-r128-ln-arc | 0.951 | 0.9972 | 0.053 | 5.54 |
-| lcnet050-f256-r128-bn-arc | 0.876 | 0.9947 | 0.053 | 5.54 |
-| lcnet050-f256-r128-ln-arc-from-scratch | 0.330 | 0.9501 | 0.053 | 5.54 |
-| lcnet050-f512-r128-ln-arc-gap | 0.717 | 0.9876 | 0.051 | 2.67 |
-| lcnet050-f256-r128-ln-arc-squeeze | 0.953 | 0.9975 | 0.052 | 2.46 |
-| lcnet050-f256-r128-ln-cos-squeeze | 0.942 | 0.9975 | 0.052 | 2.46 |
-</div>
+- **Comprehensive comparison**
+
+    <div align="center">
+
+    | Name | TPR@FPR=1e-4 | ROC | FLOPs (G) | Size (MB) |
+    | --- | :---: | :---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-arc | 0.754 | 0.9951 | 0.053 | 5.54 |
+    | lcnet050-f256-r128-ln-softmax | 0.663 | 0.9907 | 0.053 | 5.54 |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** | 0.053 | 5.54 |
+    | lcnet050-f256-r128-ln-cos-from-scratch | 0.141 | 0.9273 | 0.053 | 5.54 |
+    | lcnet050-f256-r128-ln-cos-squeeze | 0.772 | 0.9958 | 0.052 | **2.46** |
+    | lcnet050-f256-r128-bn-cos | 0.721 | 0.992 | 0.053 | 5.54 |
+    | lcnet050-f128-r96-ln-cos | 0.713 | 0.9944 | 0.029 | 2.33 |
+    | lcnet050-f256-r128-ln-cos-gap | 0.480 | 0.9762 | 0.053 | 2.67 |
+    | efficientnet_b0-f256-r128-ln-cos | 0.682 | 0.9931 | 0.242 | 19.89 |
+
+    </div>
+
+- **Comparison Based on the Number of Target Classes**
+
+    <div>
+
+    | Name | Num_Classes | TPR@FPR=1e-4 | ROC |
+    | --- | ---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-arc |  16,256 | 0.615 | 0.9867 |
+    | lcnet050-f256-r128-ln-arc | 130,048 | 0.666 | 0.9919 |
+    | lcnet050-f256-r128-ln-arc | 390,144 | **0.754** | **0.9951** |
+
+    </div>
+
+    - The more classes there are, the better the model performs.
+
+- **MarginLoss Comparison**
+
+    <div>
+
+    | Name | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: |
+    | lcnet050-f256-r128-ln-softmax | 0.663 | 0.9907 |
+    | lcnet050-f256-r128-ln-arc | 0.754 | 0.9951 |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** |
+
+    </div>
+
+    - Using CosFace or ArcFace alone, ArcFace performs better.
+    - With PartialFC, CosFace performs better.
+
+- **BatchNorm vs LayerNorm**
+
+    <div>
+
+    | Name | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: |
+    | lcnet050-f256-r128-bn-cos | 0.721 | 0.9921 |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** |
+
+    </div>
+
+    - Using LayerNorm yields better results than BatchNorm.
+
+- **Pretrain vs From-Scratch**
+
+    <div>
+
+    | Name | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos-from-scratch | 0.141 | 0.9273 |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** |
+
+    </div>
+
+    - Using Pretrain is necessary and can save us a lot of time.
+
+- **Ways to reduce model size**
+
+    <div>
+
+    | Name | TPR@FPR=1e-4 | ROC | Size (MB) | FLOPs (G) |
+    | --- | :---: | :---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** |  5.54 | 0.053 |
+    | lcnet050-f256-r128-ln-cos-squeeze | 0.772 | 0.9958 | **2.46** | **0.053** |
+    | lcnet050-f256-r128-ln-cos-gap | 0.480 | 0.9762 | 2.67 | 0.053 |
+    | lcnet050-f128-r96-ln-cos | 0.713 | 0.9944 | 2.33 | 0.029 |
+
+    </div>
+
+    - Methods:
+        - flatten: Flatten -> Linear (Default)
+        - gap: GlobalAveragePooling2d -> Linear
+        - squeeze: Conv2d -> Flatten -> Linear
+        - Reduce resolution and feature dimensions
+    - Use the squeeze method, which reduces the model size by half, although it sacrifices a little performance.
+    - Using the gap method, the accuracy is greatly reduced.
+    - Reduce the resolution and feature dimensions, and the accuracy will be slightly reduced.
+
+- **Increase Backbone**
+
+    <div>
+
+    | Name | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos | **0.784** | **0.9968** |
+    | efficientnet_b0-f256-r128-ln-cos | 0.682 | 0.9931 |
+
+    </div>
+
+    - As the number of parameters increases, the effect decreases. We believe this is related to the data diversity of the training data set. Since our approach does not provide much diversity, increasing the number of parameters does not improve the performance.
 
 ---
 
-- **lcnet050-f256-r128-ln-arc-squeeze results**
+- **lcnet050-f256-r128-ln-cos results**
 
-    - **TPR @ FPR = 0.0001: 0.953**
-
-        <div align="center">
-
-        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
-        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.922  |  0.953  |  0.974  |  0.989  |  0.996  |   1.0   |
-        | Threshold |  0.675  |  0.657  |  0.636  |  0.610  |  0.572  |  0.371  |
-
-        </div>
-
-    - **ROC Curve & PCA**
-
-        <div align="center">
-            <img src="./docs/arcface_result.jpg" width="800">
-        </div>
-
-- **lcnet050-f256-r128-ln-cos-squeeze Results**
-
-    - **TPR @ FPR = 0.0001: 0.942**
+    - **TPR@FPR=1e-4: 0.784**
 
         <div align="center">
 
         |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
         | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.913  |  0.942  |  0.970  |  0.987  |  0.995  |   1.0   |
-        | Threshold |  0.698  |  0.681  |  0.657  |  0.627  |  0.586  |  0.351  |
+        |    TPR    |  0.673  |  0.784  |  0.879  |  0.950  |  0.992  |   1.0   |
+        | Threshold |  0.751  |  0.726  |  0.697  |  0.663  |  0.608  |  0.341  |
 
         </div>
 
-    - **ROC Curve & PCA**
+    - **TSNE & PCA & ROC Curve**
 
         <div align="center">
             <img src="./docs/cosface_result.jpg" width="800">
         </div>
 
+- **lcnet050-f256-r128-ln-cos-squeeze results**
+
+    - **TPR@FPR=1e-4: 0.772**
+
+        <div align="center">
+
+        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
+        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+        |    TPR    |  0.674  |  0.772  |  0.864  |  0.940  |  0.989  |   1.0   |
+        | Threshold |  0.726  |  0.703  |  0.677  |  0.645  |  0.594  |  0.358  |
+
+        </div>
+
+    - **TSNE & PCA & ROC Curve**
+
+        <div align="center">
+            <img src="./docs/cosface_result_squeeze.jpg" width="800">
+        </div>
+
 ### Discussion of Results
+
+- You might consider using a margin loss, such as CosFace or ArcFace. However, regardless of the choice, it's crucial to pair it with [PartialFC](https://arxiv.org/abs/2203.15565) to significantly increase training speed, stabilize convergence results, and improve performance. We would also like to express our special thanks to the implementation by [insightface](https://github.com/deepinsight/insightface) . If you have time, consider giving them a star.
 
 - In terms of the variety of text images, we initially used about 500 types, which was later increased to 800, 10,000, and so on. Ultimately, we decided to include the indoor dataset as a base, expanding the overall classification categories to approximately 400,000. Our conclusion here aligns with the task of face recognition: the effectiveness of a model is greatly related to the diversity of the training data. Therefore, we need to use a large dataset to ensure that the model can learn enough features and effectively distinguish between different categories.
 
+- Through experimentation, we found that using **low-precision training** enhances the model's generalization capabilities. This is attributed to the model's propensity for overfitting; low-precision training effectively mitigates this issue. Implementing low-precision directly in the `trainer` is infeasible due to the lack of support for certain operators in CUDA. Therefore, we employed `torch.set_float32_matmul_precision('medium')` as a method to achieve low-precision training.
+
 - Through experiments, we found that using LayerNorm yielded better results than BatchNorm in the task of text image classification. We believe this is because text images (such as street signs, document images, etc.) usually contain highly variable features like different fonts, sizes, background noise, etc. LayerNorm, by standardizing each sample independently, helps the model handle these variations more effectively. In contrast, in face recognition, using BatchNorm helps the model learn to recognize subtle differences from highly similar facial images. This is crucial for ensuring that the model can effectively recognize facial features under various conditions such as lighting, angles, and facial expressions.
 
-- Our benchmark dataset, being the client's private data, cannot be disclosed in any form or manner. However, we can have some objective discussion — this validation data is overly simplistic. Compared to the commonly used IJB-C evaluation protocol in face recognition, we believe the difficulty level of this dataset is far from sufficient. Therefore, in future versions, we will try to find more challenging ways to ensure a more objective effectiveness of the model.
-
-- We observed overfitting in the later stages of training on CosFace, which led to less stable performance on the test set compared to ArcFace. We believe this is due to ArcFace's theoretical foundation, which provides greater stability in feature generation. Therefore, we ultimately chose ArcFace as our default model architecture.
+- When using CosFace and ArcFace individually, we found that ArcFace performed better; however, the situation was completely different when paired with PartialFC, where CosFace performed better.
 
 - Pretrain is necessary. We tried not to use Pretrain, but the effect was very poor. The reason may be that the diversity of the data set we provided is still not enough, so we need to use Pretrain to help the model learn more features. We thank the models provided by timm again, which saved us a lot of time and manpower.
 
 - In the process of connecting the Backbone and Head, using `nn.Flatten` to capture all information and integrating it into the feature encoding layer with `nn.Linear` proves to be the most effective approach. However, the downside is that it requires a substantial amount of parameters — in scenarios where lightweight models are crucial, even an increase of 1MB in model size is considered significant. To address this, we experimented with two approaches. Firstly, we tried using `nn.GlobalAvgPool2d` to gather all information and then integrated it into the feature encoding layer with `nn.Linear`. Secondly, we applied `nn.Conv2d` to reduce the number of channels to a quarter of the original count, a step we refer to as **Squeeze**, followed by using `nn.Flatten` in combination with `nn.Linear` for integration into the feature encoding layer. Our experiments show that the **Squeeze** strategy is the right choice. This strategy not only effectively reduces the model size but also maintains its performance.
-
-- When we used the `FastViT-T8` model as the architecture for feature extraction, we encountered a significant decrease in performance (TPR@FPR=1e-4 -> 0.33). Consequently, we switched to the similarly sized `EfficientNet_B0`, which did not exhibit the same issue. Despite carefully examining the `FastViT` architecture, we are currently unable to pinpoint the exact cause of this problem.
 
 ---
 
@@ -396,6 +493,20 @@ Reference: [ArcFace: Additive Angular Margin Loss for Deep Face Recognition](htt
 
     Here, $`\theta_{y_i}`$ and $`\theta_j`$ are the angles between $`x_i`$ and $`W_{y_i}`$, and between $`x_i`$ and other class weight vectors, respectively. $`s`$ is a scaling parameter that controls the steepness of the decision boundary.
 
+### PartialFC
+
+<div align="center">
+    <img src="./docs/pfc_arch.jpg" width="800">
+</div>
+
+- **Reference**: [Partial FC: Training 10 Million Identities on a Single Machine](https://arxiv.org/pdf/2010.05222.pdf)
+
+    - The structure of PartialFC's distributed implementation. k represents the number of GPUs.
+    - Allgather: Collects data from all GPUs and distributes the combined data to all GPUs.
+    - Allreduce: Sums the data and distributes the result to all GPUs.
+
+PartialFC is an efficient distributed sampling algorithm specifically designed to address memory limitations in large-scale facial recognition systems. This method reduces the demand on GPU memory effectively by training only on a randomly selected subset of classes, while maintaining recognition accuracy. With PartialFC, it is possible to handle identity recognition tasks involving tens of millions of identities, even with limited hardware resources. The implementation of this algorithm not only enhances training efficiency but also opens new possibilities for the development of large-scale facial recognition technologies.
+
 ---
 
 ## Dataset
@@ -404,33 +515,22 @@ The majority of the text and image data were collected through internet searches
 
 Apart from internet searches, we have gathered some text and image data from the following datasets:
 
-- **Cards Image Dataset-Classification**
-    - [**Dataset**](https://www.kaggle.com/datasets/gpiosenka/cards-image-datasetclassification?resource=download)
-    - This is a high-quality dataset of playing card images. All images are in jpg format, with dimensions of 224 X 224 X 3. Every image in the dataset has been cropped so that only a single card appears in the image, and the card occupies more than 50% of the image pixels. There are 7,624 training images, 265 test images, and 265 validation images. The training, test, and validation directories are divided into 53 subdirectories, each corresponding to one of the 53 types of cards. The dataset also includes a CSV file for loading the dataset.
-
-    Not all data from this dataset were included, as most samples were highly similar and did not meet our training needs. Therefore, we only incorporated the following categories:
-
-    - Joker
-    - All types of King
-    - All types of Queen
-    - All types of Jack
-
-    From each category, we manually selected 5 to 10 images, totaling approximately 830 text images as a base.
-
 - **Indoor Scenes**
    - [**Indoor**](https://web.mit.edu/torralba/www/indoor.html)
    - This dataset contains 67 indoor categories, with a total of 15,620 images. The number of images varies per category, but each category has at least 100 images. All images are in jpg format.
 
    We removed a few damaged images from this dataset and defined each image as a category, obtaining a total of 15,590 images.
 
-In the end, we collected 16,420 images as a base, and defined the following transformation methods:
+In the end, we collected 16,256 images as a base, and defined the following transformation methods:
 
 - Original image
 - Rotation by 90 degrees
 - Rotation by 180 degrees
 - Rotation by 270 degrees
 
-Coupled with horizontal flipping, vertical flipping, and negative processing, one image can form 24 different categories. Therefore, we have approximately 400,000 text categories in total.
+With 'vertical flip' and 'cropping' transformations, one image can constitute 24 types, thus we have approximately 400,000 text categories in total.
+
+Note that 'vertical flip' and 'horizontal flip' are mutually exclusive because combining them with rotations of 90, 180, and 270 degrees will result in the same image.
 
 Here is a brief demonstration of the expansion logic:
 
@@ -456,7 +556,7 @@ def _build_dataset(self):
             interpolation=self.interpolation
         )
 
-        d01 = (label * 24, img)
+        d01 = (label, img)
         d02 = (label * 24 + 1, D.imrotate(img, 90))
         d03 = (label * 24 + 2, D.imrotate(img, 180))
         d04 = (label * 24 + 3, D.imrotate(img, 270))
@@ -464,26 +564,27 @@ def _build_dataset(self):
         d06 = (label * 24 + 5, cv2.flip(D.imrotate(img, 90), 0))
         d07 = (label * 24 + 6, cv2.flip(D.imrotate(img, 180), 0))
         d08 = (label * 24 + 7, cv2.flip(D.imrotate(img, 270), 0))
-        d09 = (label * 24 + 8, cv2.flip(img, 1))
-        d10 = (label * 24 + 9, cv2.flip(D.imrotate(img, 90), 1))
-        d11 = (label * 24 + 10, cv2.flip(D.imrotate(img, 180), 1))
-        d12 = (label * 24 + 11, cv2.flip(D.imrotate(img, 270), 1))
-        d13 = (label * 24 + 12, 255 - d01[1])
-        d14 = (label * 24 + 13, 255 - d02[1])
-        d15 = (label * 24 + 14, 255 - d03[1])
-        d16 = (label * 24 + 15, 255 - d04[1])
-        d17 = (label * 24 + 16, 255 - d05[1])
-        d18 = (label * 24 + 17, 255 - d06[1])
-        d19 = (label * 24 + 18, 255 - d07[1])
-        d20 = (label * 24 + 19, 255 - d08[1])
-        d21 = (label * 24 + 20, 255 - d09[1])
-        d22 = (label * 24 + 21, 255 - d10[1])
-        d23 = (label * 24 + 22, 255 - d11[1])
-        d24 = (label * 24 + 23, 255 - d12[1])
+        d09 = (label * 24 + 8, d01[1][:img.shape[0] // 2, :, :])
+        d10 = (label * 24 + 9, d02[1][:img.shape[0] // 2, :, :])
+        d11 = (label * 24 + 10, d03[1][:img.shape[0] // 2, :, :])
+        d12 = (label * 24 + 11, d04[1][:img.shape[0] // 2, :, :])
+        d13 = (label * 24 + 12, d05[1][:img.shape[0] // 2, :, :])
+        d14 = (label * 24 + 13, d06[1][:img.shape[0] // 2, :, :])
+        d15 = (label * 24 + 14, d07[1][:img.shape[0] // 2, :, :])
+        d16 = (label * 24 + 15, d08[1][:img.shape[0] // 2, :, :])
+        d17 = (label * 24 + 16, d01[1][img.shape[0] // 2:, :, :])
+        d18 = (label * 24 + 17, d02[1][img.shape[0] // 2:, :, :])
+        d19 = (label * 24 + 18, d03[1][img.shape[0] // 2:, :, :])
+        d20 = (label * 24 + 19, d04[1][img.shape[0] // 2:, :, :])
+        d21 = (label * 24 + 20, d05[1][img.shape[0] // 2:, :, :])
+        d22 = (label * 24 + 21, d06[1][img.shape[0] // 2:, :, :])
+        d23 = (label * 24 + 22, d07[1][img.shape[0] // 2:, :, :])
+        d24 = (label * 24 + 23, d08[1][img.shape[0] // 2:, :, :])
 
         dataset.extend([
-            d01, d02, d03, d04, d05, d06, d07, d08, d09, d10, d11, d12,
-            d13, d14, d15, d16, d17, d18, d19, d20, d21, d22, d23, d24,
+            d01, d02, d03, d04, d05, d06, d07, d08,
+            d09, d10, d11, d12, d13, d14, d15, d16,
+            d17, d18, d19, d20, d21, d22, d23, d24
         ])
 
     return dataset
@@ -529,15 +630,43 @@ class DefaultImageAug:
         self.aug = A.Compose([
 
             DT.ShiftScaleRotate(
-                shift_limit=0.05,
-                scale_limit=0.05,
-                rotate_limit=10,
+                shift_limit=0.1,
+                scale_limit=0.1,
+                rotate_limit=15,
             ),
 
             A.OneOf([
                 A.MotionBlur(),
+                A.MedianBlur(),
+                A.GaussianBlur(),
+                A.ZoomBlur(),
                 A.Defocus(radius=(3, 5)),
-            ], p=p),
+                A.ImageCompression(quality_lower=0, quality_upper=50),
+            ]),
+
+            A.OneOf([
+                A.ISONoise(),
+                A.GaussNoise(),
+                A.MultiplicativeNoise(
+                    multiplier=[0.5, 1.5],
+                    elementwise=True,
+                    per_channel=True
+                ),
+            ]),
+
+            A.OneOf([
+                A.ColorJitter(
+                    brightness=0.3,
+                    contrast=0.1,
+                    saturation=0.1,
+                ),
+                A.ToGray(),
+                A.ToSepia(),
+                A.ChannelShuffle(),
+                A.ChannelDropout(),
+                A.RGBShift(),
+                A.InvertImg(),
+            ]),
 
         ], p=p)
 
@@ -547,10 +676,10 @@ class DefaultImageAug:
 ```
 
 - **ShiftScaleRotate**
-  - Since we have already expanded our categories using flipping and 90-degree rotations, we cannot use extensive flipping or large-scale rotations here, as it would lead to category conflicts. In this case, we only perform slight modifications, specifically limited to minor rotations (plus or minus 10 degrees) and scaling adjustments (5% scale variation).
+  - Since we have already expanded our categories using flipping and 90-degree rotations, we cannot use extensive flipping or large-scale rotations here, as it would lead to category conflicts. In this case, we only perform slight modifications, specifically limited to minor rotations (plus or minus 15 degrees) and scaling adjustments (10% scale variation).
 
 - **Others**
-  - We have introduced some blurring and noise disturbances, without altering the colors. This is because, in our logic, images of the same shape but with different colors are considered different categories.
+  - We did some noise, noise, brightness and color interference.
 
 ---
 
