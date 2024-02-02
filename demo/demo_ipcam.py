@@ -7,6 +7,9 @@ IPADDR = '192.168.0.179'  # Change this to your IP camera address
 aligner = DocAligner()
 classifier = DocClassifier()
 
+# If you feel model performance is not good, you should find a better quality
+# and update the registered images in `register` folder.
+
 
 def _run(img):
     doc_info = aligner(img)

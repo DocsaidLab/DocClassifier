@@ -34,7 +34,7 @@ class WarpFeatureLearning(nn.Module):
     def forward(self, img: torch.Tensor):
         xs = self.backbone(img)
         features = self.head(xs)
-        return features
+        return nn.functional.normalize(features)
 
 
 TORCH_TYPE_LOOKUP = {

@@ -13,11 +13,21 @@ DIR = D.get_curdir(__file__)
 INDOOR_ROOT = '/data/Dataset/indoor_scene_recognition/Images'
 
 
+class CoarseDropout(DT.BorderValueMixin, A.CoarseDropout):
+    ...
+
+
 class DefaultImageAug:
 
     def __init__(self, p=0.5):
 
         self.aug = A.Compose([
+
+            A.OneOf([
+                CoarseDropout(max_height=16, max_width=16,
+                              min_holes=1, max_holes=4),
+                A.RandomSunFlare(src_radius=128),
+            ]),
 
             DT.ShiftScaleRotate(
                 shift_limit=0.1,
