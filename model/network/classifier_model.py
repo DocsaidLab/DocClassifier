@@ -24,11 +24,22 @@ DIR = D.get_curdir(__file__)
 
 INDOOR_ROOT = '/data/Dataset/indoor_scene_recognition/Images'
 
+IMAGENET_ROOT = '/data/Dataset/ILSVRC2012/train'
 
-def get_num_classes(root: Union[str, Path] = None) -> int:
 
-    if not (fp := DIR.parent.parent / 'data' / 'indoor_cache.json').is_file():
-        fs_ind = D.get_files(INDOOR_ROOT, suffix=['.jpg', '.png', '.jpeg'])
+def get_num_classes(root: Union[str, Path] = None, use_imagenet: bool = False) -> int:
+
+    if use_imagenet:
+        data_root = IMAGENET_ROOT
+        cache_dir = 'imagenet_cache.json'
+        augment_ratio = 1
+    else:
+        data_root = INDOOR_ROOT
+        cache_dir = 'indoor_cache.json'
+        augment_ratio = 24
+
+    if not (fp := DIR.parent.parent / 'data' / cache_dir).is_file():
+        fs_ind = D.get_files(data_root, suffix=['.jpg', '.png', '.jpeg'])
         fs_ind_ = [str(f) for f in D.Tqdm(
             fs_ind, desc='Drop Empty images.') if D.imread(f) is not None]
         D.dump_json(fs_ind_, fp)
@@ -38,7 +49,8 @@ def get_num_classes(root: Union[str, Path] = None) -> int:
     default_root = DIR.parent.parent / 'data' / 'unique_pool' \
         if root is None else root
     fs = D.get_files(default_root, suffix=['.jpg'])
-    return (len(fs) + len(fs_ind_)) * 24  # withs augmentation
+
+    return (len(fs) + len(fs_ind_)) * augment_ratio  # withs augmentation
 
 
 class IdentityMarginLoss(nn.Module):
