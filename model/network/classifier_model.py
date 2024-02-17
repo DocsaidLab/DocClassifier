@@ -70,6 +70,7 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
     def __init__(self, cfg: Dict[str, Any]):
         super().__init__()
         self.cfg = cfg
+        self.use_imagenet = cfg['common']['use_imagenet']
         self.preview_batch = cfg['common']['preview_batch']
         self.apply_solver_config(cfg['optimizer'], cfg['lr_scheduler'])
 
@@ -100,7 +101,7 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
 
         # Setup loss
         loss_name = cfg_model['loss']['name']
-        num_classes = get_num_classes()
+        num_classes = get_num_classes(use_imagenet=self.use_imagenet)
         embed_dim = cfg_model['loss']['embed_dim']
         margin_loss = globals()[loss_name](**cfg_model['loss']['options'])
         self.pfc = PartialFC_V2(margin_loss, embed_dim,

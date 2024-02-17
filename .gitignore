@@ -208,3 +208,5 @@ lcnet100_cosface_f256_r128/
 lcnet050_cosface_f256_r128_squeeze_authme/
 
 lcnet050_cosface_f512_r128/
+
+lcnet050_cosface_f256_r128_squeeze_imagenet/

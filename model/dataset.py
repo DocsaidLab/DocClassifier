@@ -84,7 +84,7 @@ class ImageNetAug:
         self.aug = A.Compose([
 
             A.OneOf([
-                A.RandomResizedCrop(height=h, width=w),
+                A.RandomResizedCrop(height=h, width=w, scale=(0.8, 1.0)),
                 A.ColorJitter(),
             ])
 

@@ -1,10 +1,11 @@
 common:
-  batch_size: 512
+  batch_size: 1024
   image_size: [128, 128]
   is_restore: False
   restore_ind: ""
   restore_ckpt: ""
   preview_batch: 1000
+  use_imagenet: True
 
 global_settings:
   image_size: [128, 128]
@@ -69,6 +70,7 @@ dataset:
     options:
       aug_ratio: 1
       length_of_dataset: 2560000
+      use_imagenet: True
   valid_options:
     name: RealDataset
     options:
@@ -77,12 +79,12 @@ dataset:
 dataloader:
   train_options:
     batch_size: -1
-    num_workers: 24
+    num_workers: 16
     shuffle: False
     drop_last: False
   valid_options:
     batch_size: -1
-    num_workers: 24
+    num_workers: 16
     shuffle: False
     drop_last: False
 
