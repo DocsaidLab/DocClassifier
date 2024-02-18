@@ -349,6 +349,20 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
     - As the number of parameters increases, the effect decreases. We believe this is related to the data diversity of the training data set. Since our approach does not provide much diversity, increasing the number of parameters does not improve the performance.
 
+- **Using ImageNet1K as the Base Class**
+
+    <div>
+
+    | Name | Dataset | Num_Classes | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos-squeeze | Indoor | 390,144 | 0.772 | 0.9958 |
+    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | 1,281,833 | **0.813** | **0.9961** |
+
+    </div>
+
+    - By using ImageNet-1K to expand the number of categories to approximately 1.3 million (without rotation augmentation, etc.), the model is given a richer variety of image changes, increasing data diversity and improving performance by 4%.
+
+
 ---
 
 - **lcnet050-f256-r128-ln-cos results**

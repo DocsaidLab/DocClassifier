@@ -5,6 +5,7 @@ common:
   restore_ind: ""
   restore_ckpt: ""
   preview_batch: 1000
+  use_imagenet: True
 
 global_settings:
   image_size: [128, 128]
@@ -14,7 +15,7 @@ trainer:
   precision: 32
   val_check_interval: 1.0
   gradient_clip_val: 5
-  accumulate_grad_batches: 1
+  accumulate_grad_batches: 8
   accelerator: gpu
   devices: [0]
 
@@ -28,7 +29,7 @@ model:
       features_only: True
       replace_components: True
   head:
-    name: FeatureLearningSqueezeHead
+    name: FeatureLearningLNHead
     options:
       in_dim: 320
       embed_dim: 256

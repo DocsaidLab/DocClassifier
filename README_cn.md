@@ -350,6 +350,19 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
     - 參數量增加，效果降低，我們認為這個跟訓練資料集的資料多樣性有關。由於我們所採用的方式無法提供太多的多樣性，因此增加參數量並不能提高效果。
 
+- **更改 ImageNet1K 資料集為基底類別 **
+
+    <div>
+
+    | Name | Dataset | Num_Classes | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos-squeeze | Indoor | 390,144 | 0.772 | 0.9958 |
+    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | 1,281,833 | **0.813** | **0.9961** |
+
+    </div>
+
+    - 使用 ImageNet-1K 將類別擴充到約 130 萬類（而且沒有經過旋轉增強等），給予模型更豐富的圖面變化，增加資料多樣性，將效果提高了 4%。
+
 ---
 
 - **lcnet050-f256-r128-ln-cos results**
