@@ -353,6 +353,19 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **引入 ImageNet1K 資料集及使用 CLIP 模型進行知識蒸餾**
 
+    由於資料集規模擴大，原本的設定參數已經無法順利地讓模型收斂，因此我們對模型進行了一些調整。
+
+    - **Settings**
+        - Num of classes: 1,281,833
+        - Num of epochs: 40
+        - Num of data per epoch: 2,560,000
+        - Batch Size: 1024
+        - Optimizer: AdamW
+        - Setting:
+            - squeeze: Conv2d -> Flatten -> Linear
+
+    ---
+
     <div>
 
     | Name | Dataset | with CLIP | Num_Classes | TPR@FPR=1e-4 | ROC |
@@ -445,6 +458,8 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - 在 Backbone 與 Head 串接的過程中，使用 `nn.Flatten` 取得所有資訊並使用 `nn.Linear` 整合到特徵編碼層效果是最好的！但是缺點是需要佔用大量的參數 —— 在輕量模型的場景中，增加 1MB 的模型大小都是一件令人髮指的事情。為此我們嘗試了兩個方向，其一：使用 `nn.GlobalAvgPool2d` 取得所有資訊並使用 `nn.Linear` 整合到特徵編碼層；其二：使用 `nn.Conv2d` 先將通道數降維至原本的 1/4 ，這邊我們稱為 Squeeze，接著再使用 `nn.Flatten` 搭配 `nn.Linear` 整合到特徵編碼層。經過實驗，使用 Squeeze 的策略是對的。這個策略不僅能夠有效地減少模型大小，同時維持模型的效能。
 
+- 引入 CLIP 的特徵是一個不錯的策略，這個策略不僅能夠提高模型的效能，同時也能夠提高模型的泛化能力。這個策略的核心是利用 CLIP 模型對我們的模型進行知識蒸餾，從而將 CLIP 模型的特徵引入到我們的模型中。這個策略的效果是非常好的，我們認為這是因為 CLIP 模型具有豐富的知識，能夠幫助我們的模型學習到更穩健的特徵表示。
+
 ---
 
 ## 訓練模型
@@ -469,11 +484,19 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 ## 模型架構設計
 
-### Margin Loss 模型
-
 <div align="center">
     <img src="./docs/clip_distillation_arch.jpg" width="800">
 </div>
+
+---
+
+### Margin Loss 模型
+
+<div align="center">
+    <img src="./docs/margin_loss.jpg" width="800">
+</div>
+
+- 參考文獻：[ArcFace: Additive Angular Margin Loss for Deep Face Recognition](https://arxiv.org/pdf/1801.07698.pdf)
 
 ---
 
@@ -490,14 +513,6 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
     在這個模型中，使用的是一個簡單的線性層，將輸入的特徵向量轉換成輸出類別的概率分佈。和一般線性分類不同之處在於，我們在後續會使用 CosFace 或 ArcFace 等度量學習用的損失函數，因此在輸出的特徵會進行套用 normalize 函數，以符合後續的計算。
 
 - **Loss: Margin Loss**
-
-    <div align="center">
-        <img src="./docs/margin_loss.jpg" width="800">
-    </div>
-
-    - 參考文獻：[ArcFace: Additive Angular Margin Loss for Deep Face Recognition](https://arxiv.org/pdf/1801.07698.pdf)
-
-    ---
 
     CosFace 是用於臉部辨識任務的深度學習中的損失函數。其設計原理著重於透過優化類間和類內距離來增強特徵空間中類別之間的可區分性，以提高學習到的特徵的判別力。
 
@@ -535,8 +550,9 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
     - Allgather：從所有GPU收集資料並將組合資料分發到所有 GPU。
     - Allreduce：對資料進行求和並將結果分發到所有 GPU。
 
-PartialFC 是一種高效的分布式抽樣算法，專為解決在大規模人臉辨識系統中的記憶體限制問題而設計。這種方法通過只對一部分隨機選擇的類別進行訓練，有效降低了對 GPU 記憶體的需求，同時保持了辨識精度。利用 PartialFC，即便是使用有限的硬件資源，也能處理數以千萬計的身份辨識任務。這種算法的實現不僅提高了訓練效率，還為大規模人臉辨識技術的發展提供了新的可能性。
+---
 
+PartialFC 是一種高效的分布式抽樣算法，專為解決在大規模人臉辨識系統中的記憶體限制問題而設計。這種方法通過只對一部分隨機選擇的類別進行訓練，有效降低了對 GPU 記憶體的需求，同時保持了辨識精度。利用 PartialFC，即便是使用有限的硬件資源，也能處理數以千萬計的身份辨識任務。這種算法的實現不僅提高了訓練效率，還為大規模人臉辨識技術的發展提供了新的可能性。
 
 ### CLIP model Distillation
 
@@ -545,6 +561,8 @@ PartialFC 是一種高效的分布式抽樣算法，專為解決在大規模人�
 </div>
 
 - **參考文獻**：[Open-vocabulary Object Detection via Vision and Language Knowledge Distillation](https://arxiv.org/abs/2104.13921)
+
+---
 
 這篇文獻介紹了一種名為 ViLD（Vision and Language knowledge Distillation）的訓練方法，旨在提升開放詞彙物體檢測的能力。開放詞彙物體檢測是一項挑戰性任務，其目標是能夠識別由任意文本輸入描述的物體。主要的挑戰在於訓練數據的可用性，因為擴大現有物體檢測數據集中包含的類別數量非常昂貴。
 

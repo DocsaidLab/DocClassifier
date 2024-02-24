@@ -352,6 +352,19 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 - **Introduce the ImageNet1K dataset and use the CLIP model for knowledge distillation**
 
+    Due to the expansion of the dataset size, the original configuration parameters were no longer sufficient to allow the model to converge smoothly. Therefore, we made some adjustments to the model.
+
+    - **Settings**
+        - Num of classes: 1,281,833
+        - Num of epochs: 40
+        - Num of data per epoch: 2,560,000
+        - Batch Size: 1024
+        - Optimizer: AdamW
+        - Setting:
+            - squeeze: Conv2d -> Flatten -> Linear
+
+    ---
+
     <div>
 
     | Name | Dataset | with CLIP | Num_Classes | TPR@FPR=1e-4 | ROC |
@@ -440,6 +453,8 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
 - In the process of connecting the Backbone and Head, using `nn.Flatten` to capture all information and integrating it into the feature encoding layer with `nn.Linear` proves to be the most effective approach. However, the downside is that it requires a substantial amount of parameters — in scenarios where lightweight models are crucial, even an increase of 1MB in model size is considered significant. To address this, we experimented with two approaches. Firstly, we tried using `nn.GlobalAvgPool2d` to gather all information and then integrated it into the feature encoding layer with `nn.Linear`. Secondly, we applied `nn.Conv2d` to reduce the number of channels to a quarter of the original count, a step we refer to as **Squeeze**, followed by using `nn.Flatten` in combination with `nn.Linear` for integration into the feature encoding layer. Our experiments show that the **Squeeze** strategy is the right choice. This strategy not only effectively reduces the model size but also maintains its performance.
 
+- Introducing features from the CLIP model is an effective strategy that not only enhances the model's performance but also its generalization ability. The essence of this strategy is to use knowledge distillation from the CLIP model to incorporate its features into our model. This approach has proven to be highly effective, likely because the CLIP model possesses a vast repository of knowledge, enabling our model to learn more robust feature representations.
+
 ---
 
 ## Training the Model
@@ -462,13 +477,19 @@ Let's now break down the training process step-by-step.
 
 ## Model Architecture Design
 
+<div align="center">
+    <img src="./docs/clip_distillation_arch.jpg" width="800">
+</div>
+
+---
+
 ### Margin Loss Model
 
 <div align="center">
     <img src="./docs/margin_loss.jpg" width="800">
 </div>
 
-Reference: [ArcFace: Additive Angular Margin Loss for Deep Face Recognition](https://arxiv.org/pdf/1801.07698.pdf)
+- Reference: [ArcFace: Additive Angular Margin Loss for Deep Face Recognition](https://arxiv.org/pdf/1801.07698.pdf)
 
 ---
 
@@ -500,6 +521,8 @@ Reference: [ArcFace: Additive Angular Margin Loss for Deep Face Recognition](htt
 
     CosFace enhances the performance of face recognition tasks by introducing an inter-class margin and optimizing the intra-class compactness in the feature space. It focuses on the direction of feature vectors, rather than their size, making the model more adept at learning features that differentiate between categories.
 
+    ---
+
     On the other hand, ArcFace proposes a method called Additive Angular Margin Loss. The design concept of ArcFace is similar to that of CosFace, but the margin introduced in the calculation process is slightly different. ArcFace adds the margin directly in the angular space, rather than in the cosine function. This approach increases the geometric margin in the feature space, further promoting the separation of features between classes and the aggregation of features within classes. Specifically, ArcFace adjusts the way the angle between feature vectors and their corresponding class weight vectors is calculated, thereby effectively improving identification accuracy.
 
     Mathematically, the loss function of ArcFace can be expressed as:
@@ -520,7 +543,25 @@ Reference: [ArcFace: Additive Angular Margin Loss for Deep Face Recognition](htt
     - Allgather: Collects data from all GPUs and distributes the combined data to all GPUs.
     - Allreduce: Sums the data and distributes the result to all GPUs.
 
+---
+
 PartialFC is an efficient distributed sampling algorithm specifically designed to address memory limitations in large-scale facial recognition systems. This method reduces the demand on GPU memory effectively by training only on a randomly selected subset of classes, while maintaining recognition accuracy. With PartialFC, it is possible to handle identity recognition tasks involving tens of millions of identities, even with limited hardware resources. The implementation of this algorithm not only enhances training efficiency but also opens new possibilities for the development of large-scale facial recognition technologies.
+
+### CLIP Model Distillation
+
+<div align="center">
+    <img src="./docs/vild_arch.jpg" width="500">
+</div>
+
+- **Reference**: [Open-vocabulary Object Detection via Vision and Language Knowledge Distillation](https://arxiv.org/abs/2104.13921)
+
+---
+
+This paper introduces a training method named ViLD (Vision and Language knowledge Distillation), aimed at enhancing the capability of open-vocabulary object detection. Open-vocabulary object detection is a challenging task with the goal of identifying objects described by any textual input. The primary challenge lies in the availability of training data, as it is costly to expand the number of categories contained in existing object detection datasets.
+
+The ViLD method overcomes this challenge by distilling knowledge from a pretrained open-vocabulary image classification model (as the teacher) into a two-stage detector (as the student). Specifically, it uses the teacher model to encode category texts and image regions of object proposals. Then, it trains a student detector to align the embeddings of detected boxes with the text and image embeddings inferred by the teacher.
+
+Inspired by this paper, we applied the knowledge distillation of the CLIP model to the task of text image classification. This approach can help the model learn more features and improve its generalization ability.
 
 ---
 
