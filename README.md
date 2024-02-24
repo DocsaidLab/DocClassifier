@@ -31,7 +31,6 @@ In testing, our model demonstrated an accuracy rate of over 99% using a zero-sho
 - [Table of Contents](#table-of-contents)
 - [Quick Start](#quick-start)
 - [Benchmark](#benchmark)
-- [Before We Start Training](#before-we-start-training)
 - [Training the Model](#training-the-model)
 - [Model Architecture Design](#model-architecture-design)
 - [Dataset](#dataset)
@@ -418,26 +417,6 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 - Pretrain is necessary. We tried not to use Pretrain, but the effect was very poor. The reason may be that the diversity of the data set we provided is still not enough, so we need to use Pretrain to help the model learn more features. We thank the models provided by timm again, which saved us a lot of time and manpower.
 
 - In the process of connecting the Backbone and Head, using `nn.Flatten` to capture all information and integrating it into the feature encoding layer with `nn.Linear` proves to be the most effective approach. However, the downside is that it requires a substantial amount of parameters — in scenarios where lightweight models are crucial, even an increase of 1MB in model size is considered significant. To address this, we experimented with two approaches. Firstly, we tried using `nn.GlobalAvgPool2d` to gather all information and then integrated it into the feature encoding layer with `nn.Linear`. Secondly, we applied `nn.Conv2d` to reduce the number of channels to a quarter of the original count, a step we refer to as **Squeeze**, followed by using `nn.Flatten` in combination with `nn.Linear` for integration into the feature encoding layer. Our experiments show that the **Squeeze** strategy is the right choice. This strategy not only effectively reduces the model size but also maintains its performance.
-
----
-
-## Before We Start Training
-
-Based on the model we provide, we believe it can solve most application scenarios. However, we also understand that some scenarios may require enhanced model performance, necessitating the collection of specific datasets and model fine-tuning. We empathize that you may have the budget but not the time to customize adjustments to your specific environment. Therefore, you can contact us directly for consultation. Depending on the complexity of your project, we can arrange for engineers to develop custom solutions.
-
-A concrete example is:
-
-Suppose you need to identify a unique text pattern that our current model cannot effectively recognize and classify. In this case, you can reach out to us and provide some of the data you have collected. We can then tailor the model specifically to fit your dataset. This approach can significantly enhance the model's performance but requires considerable time and manpower. Accordingly, we will offer a reasonable quote based on your needs.
-
-Alternatively, if you are not in a hurry, **you can provide us with your dataset directly**. We will incorporate it into our test dataset in a future version of the model (without a specific time frame). This future version will offer enhanced model performance, and opting for this approach is completely free for you.
-
-- **Please note: We will never make your data open source unless you request it. Normally, the data will only be used for model updates.**
-
-We would be delighted if you choose the second option, as it helps us improve our model and benefits more users.
-
-For information on how to submit your dataset, please refer to: [**Submitting a Dataset**](#dataset-submission).
-
-Contact us at: **docsaidlab@gmail.com**
 
 ---
 
