@@ -10,6 +10,7 @@ import numpy as np
 import prettytable
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from docsaidkit.torch import ArcFace, CosFace
 from fitsne import FItSNE
 from sklearn.decomposition import PCA
@@ -70,7 +71,10 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
     def __init__(self, cfg: Dict[str, Any]):
         super().__init__()
         self.cfg = cfg
-        self.use_imagenet = cfg['common']['use_imagenet']
+        self.use_imagenet = cfg['common']['use_imagenet'] \
+            if 'use_imagenet' in cfg['common'] else False
+        self.use_clip = cfg['common']['use_clip'] \
+            if 'use_clip' in cfg['common'] else False
         self.preview_batch = cfg['common']['preview_batch']
         self.apply_solver_config(cfg['optimizer'], cfg['lr_scheduler'])
 
@@ -111,19 +115,24 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         self.auc = AUROC(task='binary')
         self.roc = BinaryROC()
 
+        if self.use_clip:
+            self.l1_loss = nn.L1Loss()
+            self.clip_proj = nn.Linear(embed_dim, 512, bias=False)
+
         # for validation
         self.validation_step_outputs = []
 
     def calc_loss(self, embeddings, labels):
         return self.pfc(embeddings, labels)
 
-    def calc_combinations(self, norm_embeddings, labels):
-        combinations_pair = torch.tensor(
+    def calc_combinations(self, norm_embeddings: np.ndarray, labels: np.ndarray):
+        combinations_pair = np.array(
             list(combinations(range(norm_embeddings.shape[0]), 2)))
         base_inds, tgt_inds = combinations_pair[:, 0], combinations_pair[:, 1]
-        combinations_scores = torch.sum(
-            norm_embeddings[base_inds] * norm_embeddings[tgt_inds], dim=-1).add(1).div(2)
-        combinations_labels = torch.where(
+        combinations_scores = np.sum(
+            norm_embeddings[base_inds] * norm_embeddings[tgt_inds], axis=-1)
+        combinations_scores = (combinations_scores + 1) / 2
+        combinations_labels = np.where(
             labels[base_inds] == labels[tgt_inds], 1, 0)
         return combinations_scores, combinations_labels
 
@@ -134,18 +143,42 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         return x
 
     def training_step(self, batch, batch_idx):
-        imgs, labels = batch
-        embeddings = self.forward(imgs)
-        loss = self.calc_loss(embeddings, labels)
 
-        self.log_dict(
-            {
-                'lr': self.get_lr(),
-                'loss': loss,
-            },
-            prog_bar=True,
-            on_step=True,
-        )
+        if self.use_clip:
+            imgs, labels, base_img, clip_feats = batch
+            concat_imgs = torch.cat([imgs, base_img], dim=0)
+            embeddings = self.forward(concat_imgs)
+            embeddings, clip_embs = torch.split(
+                embeddings, [imgs.size(0), base_img.size(0)], dim=0)
+            clip_embs = self.clip_proj(clip_embs)
+            clip_loss = self.l1_loss(clip_embs, clip_feats)
+        else:
+            imgs, labels = batch
+            embeddings = self.forward(imgs)
+            pfc_loss = self.calc_loss(embeddings, labels)
+
+        if self.use_clip:
+            loss = pfc_loss + clip_loss
+            self.log_dict(
+                {
+                    'lr': self.get_lr(),
+                    'loss': loss,
+                    'pfc_loss': pfc_loss,
+                    'clip_loss': clip_loss,
+                },
+                prog_bar=True,
+                on_step=True,
+            )
+        else:
+            loss = pfc_loss
+            self.log_dict(
+                {
+                    'lr': self.get_lr(),
+                    'loss': loss,
+                },
+                prog_bar=True,
+                on_step=True,
+            )
 
         return loss
 
@@ -153,13 +186,16 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         imgs, labels = batch
         embeddings = self.forward(imgs)
         norm_embeddings = normalize(embeddings)
+
+        norm_embeddings = norm_embeddings.detach().cpu().numpy()
+        labels = labels.detach().cpu().numpy()
+
         comb_scores, comb_labels = \
             self.calc_combinations(norm_embeddings, labels)
         self.validation_step_outputs.append(
             (comb_scores, comb_labels, norm_embeddings, labels))
 
     def on_validation_epoch_end(self):
-
         comb_scores, comb_labels = [], []
         feats, labels = [], []
         for comb_scores_, comb_labels_, feats_, labels_ in self.validation_step_outputs:
@@ -168,13 +204,10 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
             feats.extend(feats_)
             labels.extend(labels_)
 
-        comb_scores = torch.stack(comb_scores)
-        comb_labels = torch.stack(comb_labels)
-        feats = torch.stack(feats)
-        labels = torch.stack(labels)
-
-        feats = feats.detach().cpu().numpy()
-        labels = labels.detach().cpu().numpy()
+        comb_scores = np.stack(comb_scores, axis=0)
+        comb_labels = np.stack(comb_labels, axis=0)
+        feats = np.stack(feats, axis=0)
+        labels = np.stack(labels, axis=0)
 
         self.draw_pca(feats, labels)
         self.draw_tsne(feats, labels)
@@ -183,6 +216,9 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         self.validation_step_outputs = []
 
     def draw_roc(self, comb_scores, comb_labels):
+
+        comb_scores = torch.from_numpy(comb_scores).to(device=self.device)
+        comb_labels = torch.from_numpy(comb_labels).to(device=self.device)
 
         auc = self.auc(comb_scores, comb_labels)
         self.log('valid_auc', auc, prog_bar=True, sync_dist=True)

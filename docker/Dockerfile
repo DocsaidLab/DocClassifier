@@ -8,6 +8,7 @@ ENV ENTRYPOINT_SCRIPT=/entrypoint.sh
 
 # 安裝 gosu
 RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
+RUN pip install openai-clip
 
 # 創建入口點腳本
 RUN printf '#!/bin/bash\n\

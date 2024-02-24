@@ -5,6 +5,7 @@ common:
   restore_ind: ""
   restore_ckpt: ""
   preview_batch: 1000
+  use_imagenet: False
 
 global_settings:
   image_size: [128, 128]

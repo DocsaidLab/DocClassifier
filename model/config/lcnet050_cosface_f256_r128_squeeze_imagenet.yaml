@@ -6,6 +6,7 @@ common:
   restore_ckpt: ""
   preview_batch: 1000
   use_imagenet: True
+  use_clip: False
 
 global_settings:
   image_size: [128, 128]
@@ -71,6 +72,7 @@ dataset:
       aug_ratio: 1
       length_of_dataset: 2560000
       use_imagenet: True
+      use_clip: False
   valid_options:
     name: RealDataset
     options:
@@ -112,7 +114,7 @@ callbacks:
       mode: max
       verbose: True
       save_last: True
-      save_top_k: 10
+      save_top_k: 5
   - name: LearningRateMonitor
     options:
       logging_interval: step
