@@ -116,7 +116,7 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
         self.roc = BinaryROC()
 
         if self.use_clip:
-            self.l1_loss = nn.L1Loss()
+            self.kl_loss = nn.KLDivLoss(reduction='batchmean', log_target=True)
             self.clip_proj = nn.Linear(embed_dim, 512, bias=False)
 
         # for validation
@@ -151,11 +151,19 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
             embeddings, clip_embs = torch.split(
                 embeddings, [imgs.size(0), base_img.size(0)], dim=0)
             clip_embs = self.clip_proj(clip_embs)
-            clip_loss = self.l1_loss(clip_embs, clip_feats)
+
+            clip_embs = normalize(clip_embs, dim=-1)
+            clip_feats = normalize(clip_feats, dim=-1)
+
+            clip_embs = clip_embs.log_softmax(dim=-1)
+            clip_feats = clip_feats.log_softmax(dim=-1)
+
+            clip_loss = self.kl_loss(clip_embs, clip_feats)
         else:
             imgs, labels = batch
             embeddings = self.forward(imgs)
-            pfc_loss = self.calc_loss(embeddings, labels)
+
+        pfc_loss = self.calc_loss(embeddings, labels)
 
         if self.use_clip:
             loss = pfc_loss + clip_loss
