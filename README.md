@@ -15,9 +15,11 @@
     <img src="./docs/title.jpg" width="800">
 </div>
 
-DocClassifier is a document image classification system designed to address challenges encountered by traditional classifiers when processing text images. Drawing inspiration from facial recognition technology, it is particularly well-suited for scenarios requiring quick identification and addition of text types, such as in fintech, banking, and the sharing economy.
+DocClassifier is a document image classification system based on Metric Learning technology, designed to address the issue of rapidly increasing and hard-to-define document types encountered by traditional classifiers when dealing with text images. It draws inspiration from facial recognition technology and is particularly suited for scenarios requiring quick identification and addition of text types, such as in the fields of fintech, banking, and the sharing economy.
 
-The system employs the PartialFC feature learning architecture, incorporating technologies like CosFace and ArcFace, enabling it to classify accurately without the need for a pre-set large number of categories. To allow the model to learn diverse features, we collected approximately 650 text images and 16,000 images for scene classification, expanding the dataset to about 400,000 categories through image augmentation techniques.
+In our basic experimental model, we utilized the PartialFC feature learning architecture, incorporating techniques like CosFace and ArcFace, allowing it to classify accurately without pre-setting a large number of categories. To enable the model to learn diverse features, we collected around 650 text images and 16,000 images for scene classification, and expanded the dataset to approximately 400,000 categories through image augmentation techniques.
+
+In further experiments, we introduced the ImageNet-1K and CLIP models. Using the ImageNet-1K dataset as a base, we expanded the number of categories to about 1.3 million, providing the model with a richer variety of visual changes and increasing data diversity. This approach improved the performance in the TPR@FPR=1e-4 benchmark by about 4.1% (from 77.2% to 81.3%) compared to the original baseline model. By introducing the CLIP model on top of ImageNet-1K and conducting knowledge distillation during training, the performance could be further improved by about 4.6% (from 81.3% to 85.9%) in the TPR@FPR=1e-4 benchmark.
 
 In terms of technology selection, PyTorch is used as the primary training platform, with ONNXRuntime facilitating model inference to ensure efficient operation on both CPUs and GPUs. We also support converting models to ONNX format for easy deployment across different platforms. For scenarios requiring model quantization, we offer quantization capabilities based on the ONNXRuntime API to enhance the model's operational efficiency and flexibility.
 
@@ -348,19 +350,20 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
     - As the number of parameters increases, the effect decreases. We believe this is related to the data diversity of the training data set. Since our approach does not provide much diversity, increasing the number of parameters does not improve the performance.
 
-- **Using ImageNet1K as the Base Class**
+- **Introduce the ImageNet1K dataset and use the CLIP model for knowledge distillation**
 
     <div>
 
-    | Name | Dataset | Num_Classes | TPR@FPR=1e-4 | ROC |
-    | --- | :---: | :---: | :---: | :---: |
-    | lcnet050-f256-r128-ln-cos-squeeze | Indoor | 390,144 | 0.772 | 0.9958 |
-    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | 1,281,833 | **0.813** | **0.9961** |
+    | Name | Dataset | with CLIP | Num_Classes | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: | :---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos-squeeze | Indoor | X | 390,144 | 0.772 | 0.9958 |
+    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | X | 1,281,833 | 0.813 | 0.9961 |
+    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | V | 1,281,833 | **0.859** | **0.9982** |
 
     </div>
 
-    - By using ImageNet-1K to expand the number of categories to approximately 1.3 million (without rotation augmentation, etc.), the model is given a richer variety of image changes, increasing data diversity and improving performance by 4%.
-
+    - By using ImageNet-1K to expand the number of categories to approximately 1.3 million, the model is provided with a richer variety of visual changes, increasing data diversity and improving performance by 4.1%.
+    - Building on the foundation of ImageNet-1K, introducing the CLIP model and conducting knowledge distillation during training can further enhance performance by 4.6% in the comparison benchmark of TPR@FPR=1e-4.
 
 ---
 
@@ -400,6 +403,25 @@ We have an internal test dataset, but due to privacy protection, we cannot make 
 
         <div align="center">
             <img src="./docs/cosface_result_squeeze.jpg" width="800">
+        </div>
+
+- **lcnet050_cosface_f256_r128_squeeze_imagenet_clip results**
+
+    - **TPR@FPR=1e-4: 0.859**
+
+        <div align="center">
+
+        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
+        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+        |    TPR    |  0.764  |  0.859  |  0.926  |  0.972  |  0.996  |   1.0   |
+        | Threshold |  0.756  |  0.735  |  0.713  |  0.684  |  0.637  |  0.368  |
+
+        </div>
+
+    - **TSNE & PCA & ROC Curve**
+
+        <div align="center">
+            <img src="./docs/cosface_result_squeeze_imagenet_clip.jpg" width="800">
         </div>
 
 ### Discussion of Results

@@ -15,9 +15,11 @@
     <img src="./docs/title.jpg" width="800">
 </div>
 
-DocClassifier 是一個文件圖像分類系統，旨在解決傳統分類器處理文本圖像時遇到的問題。它借鑑了人臉辨識技術，尤其適合於需要迅速辨識和新增文本類型的場合，例如在金融科技、銀行和共享經濟等領域中。
+DocClassifier 是一個基於度量學習（Metric Learning）技術的文件圖像分類系統，旨在解決傳統分類器處理文本圖像時遇到的文件類型快速增加且難以預先定義的問題。它借鑑了人臉辨識技術，尤其適合於需要迅速辨識和新增文本類型的場合，例如在金融科技、銀行和共享經濟等領域中。
 
-系統使用了 PartialFC 特徵學習架構，結合了 CosFace 和 ArcFace 等技術，使其能在沒有預先設定大量分類的情況下，精準地進行分類。為了讓模型能學習到多樣化的特徵，我們收集了大約 650 張文本圖像和 16000 張用於場景分類的圖像，並通過圖像增強技術擴大數據集至約 40 萬類。
+在我們設計的基本實驗模型中使用了 PartialFC 特徵學習架構，結合了 CosFace 和 ArcFace 等技術，使其能在沒有預先設定大量分類的情況下，精準地進行分類。為了讓模型能學習到多樣化的特徵，我們收集了大約 650 張文本圖像和 16000 張用於場景分類的圖像，並通過圖像增強技術擴大數據集至約 40 萬類。
+
+我們在更進一步的實驗中，引入了 ImageNet-1K 和 CLIP 模型。我們使用 ImageNet-1K 資料集作為基底類別，將類別擴充到約 130 萬類，給予模型更豐富的圖面變化，增加資料多樣性，在 TPR@FPR=1e-4 的比較基準中，比起原有的基線模型效果提高了約 4.1%（77.2%->81.3%）。若在 ImageNet-1K 的基礎上再引入 CLIP 模型，在訓練的過程中進行知識蒸餾，則效果可以在 TPR@FPR=1e-4 的比較基準中再往上提升約 4.6%（81.3%->85.9%）。
 
 在技術選擇上，PyTorch 被用作主要的訓練平台，並通過 ONNXRuntime 進行模型的推論，確保了模型在 CPU 和 GPU 上都能高效運行。我們也支持將模型轉換為 ONNX 格式，方便在不同平台上部署。針對需要模型量化的情況，我們提供了基於 ONNXRuntime API 的量化功能，以提高模型的運行效率和靈活性。
 
@@ -349,20 +351,26 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
     - 參數量增加，效果降低，我們認為這個跟訓練資料集的資料多樣性有關。由於我們所採用的方式無法提供太多的多樣性，因此增加參數量並不能提高效果。
 
-- **更改 ImageNet1K 資料集為基底類別 **
+- **引入 ImageNet1K 資料集及使用 CLIP 模型進行知識蒸餾**
 
     <div>
 
-    | Name | Dataset | Num_Classes | TPR@FPR=1e-4 | ROC |
-    | --- | :---: | :---: | :---: | :---: |
-    | lcnet050-f256-r128-ln-cos-squeeze | Indoor | 390,144 | 0.772 | 0.9958 |
-    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | 1,281,833 | **0.813** | **0.9961** |
+    | Name | Dataset | with CLIP | Num_Classes | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: | :---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos-squeeze | Indoor | X | 390,144 | 0.772 | 0.9958 |
+    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | X | 1,281,833 | 0.813 | 0.9961 |
+    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | V | 1,281,833 | **0.859** | **0.9982** |
 
     </div>
 
-    - 使用 ImageNet-1K 將類別擴充到約 130 萬類（而且沒有經過旋轉增強等），給予模型更豐富的圖面變化，增加資料多樣性，將效果提高了 4%。
+    - 使用 ImageNet-1K 將類別擴充到約 130 萬類，給予模型更豐富的圖面變化，增加資料多樣性，將效果提高 4.1%。
+    - 在 ImageNet-1K 的基礎上再引入 CLIP 模型，在訓練的過程中進行知識蒸餾，則效果可以在 TPR@FPR=1e-4 的比較基準中再往上提升 4.6%。
 
 ---
+
+### 開源模型閾值設定表
+
+我們從所有做過的實驗中，挑了幾個比較有代表性的模型釋放出來，並且提供了閾值設定表，以方便您在部署時使用。
 
 - **lcnet050-f256-r128-ln-cos results**
 
@@ -400,6 +408,25 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
         <div align="center">
             <img src="./docs/cosface_result_squeeze.jpg" width="800">
+        </div>
+
+- **lcnet050_cosface_f256_r128_squeeze_imagenet_clip results**
+
+    - **TPR@FPR=1e-4: 0.859**
+
+        <div align="center">
+
+        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
+        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+        |    TPR    |  0.764  |  0.859  |  0.926  |  0.972  |  0.996  |   1.0   |
+        | Threshold |  0.756  |  0.735  |  0.713  |  0.684  |  0.637  |  0.368  |
+
+        </div>
+
+    - **TSNE & PCA & ROC Curve**
+
+        <div align="center">
+            <img src="./docs/cosface_result_squeeze_imagenet_clip.jpg" width="800">
         </div>
 
 ### 結果討論
@@ -445,10 +472,8 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 ### Margin Loss 模型
 
 <div align="center">
-    <img src="./docs/margin_loss.jpg" width="800">
+    <img src="./docs/clip_distillation_arch.jpg" width="800">
 </div>
-
-參考文獻：[ArcFace: Additive Angular Margin Loss for Deep Face Recognition](https://arxiv.org/pdf/1801.07698.pdf)
 
 ---
 
@@ -466,6 +491,14 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **Loss: Margin Loss**
 
+    <div align="center">
+        <img src="./docs/margin_loss.jpg" width="800">
+    </div>
+
+    - 參考文獻：[ArcFace: Additive Angular Margin Loss for Deep Face Recognition](https://arxiv.org/pdf/1801.07698.pdf)
+
+    ---
+
     CosFace 是用於臉部辨識任務的深度學習中的損失函數。其設計原理著重於透過優化類間和類內距離來增強特徵空間中類別之間的可區分性，以提高學習到的特徵的判別力。
 
     CosFace 主要依賴餘弦相似度，而不是傳統的歐氏距離。 餘弦相似度在處理高維度特徵方面更有效，因為它關注向量之間的角度差異而不是它們的大小。CosFace 對特徵向量進行歸一化，使每個特徵向量的長度為 1。這種歸一化確保模型關注特徵的方向，即角度差異，而不是特徵向量的絕對大小。在計算類別之間的餘弦相似度時引入了額外的裕度。這個邊距的目的是在餘弦空間中推開不同類別的特徵，使同一類別的特徵更加緊密地聚集，而不同類別的特徵更加分散。
@@ -479,6 +512,8 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
       這裡，$`\theta_{y_i}`$ 和 $`\theta_j`$ 分別是 $`x_i`$ 和 $`W_{y_i}`$ 之間的角度，以及 $`x_i`$ 和其他類權重向量之間的角度。 $`s`$ 是控制決策邊界陡度的縮放參數。
 
     CosFace 透過引入類間裕度並優化特徵空間中的類內緊湊性，有效增強了臉部辨識任務的表現。它關注特徵向量的方向，而不是它們的大小，使模型更擅長學習區分不同類別的特徵。
+
+    ---
 
     另一方面，ArcFace 提出了一種稱為加性角邊緣損失的方法。ArcFace 的設計理念與 CosFace 相似，但它在計算過程中引入的裕度略有不同。ArcFace 直接在角度空間中添加邊緣，而不是在餘弦函數中。這種方法增加了特徵空間的幾何間隔，進一步促進了類別間特徵的分離和類內特徵的聚合。具體來說，ArcFace 調整了特徵向量與其對應類別權重向量之間角度的計算方式，從而有效提高了辨識準確性。
 
@@ -501,6 +536,21 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
     - Allreduce：對資料進行求和並將結果分發到所有 GPU。
 
 PartialFC 是一種高效的分布式抽樣算法，專為解決在大規模人臉辨識系統中的記憶體限制問題而設計。這種方法通過只對一部分隨機選擇的類別進行訓練，有效降低了對 GPU 記憶體的需求，同時保持了辨識精度。利用 PartialFC，即便是使用有限的硬件資源，也能處理數以千萬計的身份辨識任務。這種算法的實現不僅提高了訓練效率，還為大規模人臉辨識技術的發展提供了新的可能性。
+
+
+### CLIP model Distillation
+
+<div align="center">
+    <img src="./docs/vild_arch.jpg" width="500">
+</div>
+
+- **參考文獻**：[Open-vocabulary Object Detection via Vision and Language Knowledge Distillation](https://arxiv.org/abs/2104.13921)
+
+這篇文獻介紹了一種名為 ViLD（Vision and Language knowledge Distillation）的訓練方法，旨在提升開放詞彙物體檢測的能力。開放詞彙物體檢測是一項挑戰性任務，其目標是能夠識別由任意文本輸入描述的物體。主要的挑戰在於訓練數據的可用性，因為擴大現有物體檢測數據集中包含的類別數量非常昂貴。
+
+ViLD方法通過從一個預訓練的開放詞彙圖像分類模型（作為教師）向一個兩階段檢測器（作為學生）進行知識蒸餾來克服這一挑戰。具體來說，使用教師模型來編碼類別文本和物體提議的圖像區域。然後訓練學生檢測器，使其檢測到的框區域嵌入與教師推斷的文本和圖像嵌入對齊。
+
+我們受到這篇論文的啟發，把 CLIP 模型的知識蒸餾應用到文本圖像分類任務中。這種方法可以幫助模型學習到更多的特徵，提高模型的泛化能力。
 
 ---
 
