@@ -74,10 +74,14 @@ class Inference:
 
     def get_register(self, root: Union[str, D.Path] = None):
         root = DIR.parent / 'register' if root is None else D.Path(root)
-        return {
-            f.stem: self.extract_feature(D.imread(f))
-            for f in D.get_files(root, suffix=['.jpg', '.jpeg', '.png'])
-        }
+        register = {}
+        for f in D.get_files(root, suffix=['.jpg', '.jpeg', '.png']):
+            parts = f.relative_to(root).parts
+            label = '_'.join(parts[:-1]) + '_' + f.stem
+            if '_' in label[0]:
+                label = label[1:]
+            register[label] = self.extract_feature(D.imread(f))
+        return register
 
     def extract_feature(self, img: np.ndarray) -> np.ndarray:
         img_infos = preprocess(img, img_size_infer=self.img_size_infer)
