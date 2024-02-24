@@ -30,7 +30,7 @@ class DocClassifier:
     ):
         model_type = ModelType.obj_to_enum(model_type)
         if model_type == ModelType.margin_based:
-            model_cfg = 'lcnet050_arcface' if model_cfg is None else model_cfg
+            model_cfg = 'lcnet050_cosface' if model_cfg is None else model_cfg
             valid_model_cfgs = list(MarginBasedInference.configs.keys())
             if model_cfg not in valid_model_cfgs:
                 raise ValueError(
