@@ -190,7 +190,9 @@ For related tables, please refer to the explanation section in [Evaluation Resul
 
 ## Benchmark
 
-We have an internal test dataset, but due to privacy protection, we cannot make this dataset open source. We can only provide evaluation results based on this dataset.
+Our test dataset was provided by the client who initiated this project. It consists of approximately 25,000 de-identified images that have undergone document localization and cropping, covering seven different categories with a highly uneven distribution. The data exhibit a wide range of issues such as varying light conditions, blurriness, glare, and cropping deformities due to corner detection errors. We only cleaned the dataset for "incorrect category labels" before using it to evaluate the model's performance.
+
+Due to privacy concerns, we are unable to open-source this dataset and can only share the evaluation results derived from it.
 
 ### Evaluation Protocol
 
@@ -567,26 +569,28 @@ Inspired by this paper, we applied the knowledge distillation of the CLIP model 
 
 ## Dataset
 
-The majority of the text and image data were collected through internet searches.
-
-Apart from internet searches, we have gathered some text and image data from the following datasets:
+We have gathered some text and images from the internet, but it wasn't enough. Therefore, we collected additional text and images from the following datasets:
 
 - **Indoor Scenes**
    - [**Indoor**](https://web.mit.edu/torralba/www/indoor.html)
-   - This dataset contains 67 indoor categories, with a total of 15,620 images. The number of images varies per category, but each category has at least 100 images. All images are in jpg format.
+   - This dataset contains 67 categories of indoor scenes, totaling 15,620 images. The number of images varies by category, but each category has at least 100 images. All images are in jpg format.
 
-   We removed a few damaged images from this dataset and defined each image as a category, obtaining a total of 15,590 images.
+   We removed a few damaged images from this dataset and defined each image as a separate category, obtaining a total of 15,590 images.
 
-In the end, we collected 16,256 images as a base, and defined the following transformation methods:
+- **ImageNet-1K**
+    - [**ImageNet-1K**](http://www.image-net.org/)
+    - ImageNet is a large-scale visual recognition challenge, featuring over 1,000 categories, each with hundreds of images. We used images from ImageNet-1K for several experiments, utilizing them for model training.
 
-- Original image
-- Rotation by 90 degrees
-- Rotation by 180 degrees
-- Rotation by 270 degrees
+In experiments based on ImageNet-1K, since the dataset already contains about 1.3 million images, we did not need to further expand the categories and used them as is. On the other hand, in experiments based on Indoor Scenes, we expanded the dataset and defined the following transformations:
 
-With 'vertical flip' and 'cropping' transformations, one image can constitute 24 types, thus we have approximately 400,000 text categories in total.
+- Original images
+- Rotated 90 degrees
+- Rotated 180 degrees
+- Rotated 270 degrees
 
-Note that 'vertical flip' and 'horizontal flip' are mutually exclusive because combining them with rotations of 90, 180, and 270 degrees will result in the same image.
+Combined with "vertical flipping" and "cropping," one image could create 24 different categories, thus we have about 400,000 textual categories in total.
+
+Note that you can choose either "vertical flipping" or "horizontal flipping," as combining them with rotations of 90 degrees, 180 degrees, and 270 degrees will produce the same outcomes.
 
 Here is a brief demonstration of the expansion logic:
 
