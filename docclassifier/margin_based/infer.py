@@ -36,19 +36,19 @@ class Inference:
     configs = {
         'lcnet050_cosface': {
             'model_path': 'lcnet050_cosface_f256_r128_fp32.onnx',
-            'file_id': '19vOL40RYCyPx3xJAitr27skZnJRF_JJr',
+            'file_id': 'fbkyd3QqbFoLjSn',
             'img_size_infer': (128, 128),
             'threshold': 0.663  # FPR=0.01
         },
         'lcnet050_cosface_squeeze': {
             'model_path': 'lcnet050_cosface_f256_r128_squeeze_fp32.onnx',
-            'file_id': '18__OrFLfTd8mSqZ9_YIiufXg84LLPj1l',
+            'file_id': 'N3KMZsrzCp8pdqW',
             'img_size_infer': (128, 128),
             'threshold': 0.645  # FPR=0.01
         },
         'lcnet050_cosface_squeeze_imagenet_clip': {
             'model_path': 'lcnet050_cosface_f256_r128_squeeze_imagenet_clip_fp32.onnx',
-            'file_id': '1sx3WfEYZ-cFP5ZItBw7g3OhZyjk8Qy8W',
+            'file_id': 'aNTnHMwpRnk37Ej',
             'img_size_infer': (128, 128),
             'threshold': 0.684  # FPR=0.01
         },
@@ -66,10 +66,10 @@ class Inference:
         self.root = DIR / 'ckpt'
         self.cfg = cfg = self.configs[model_cfg]
         self.img_size_infer = cfg['img_size_infer']
-        model_path = str(self.root / cfg['model_path'])
+        model_path = self.root / cfg['model_path']
         if not D.Path(model_path).exists():
-            file_id = cfg['file_id']
-            os.system(D.gen_download_cmd(file_id, model_path))
+            D.download_from_docsaid(
+                cfg['file_id'], model_path.name, str(model_path))
         self.model = D.ONNXEngine(model_path, gpu_id, backend, **kwargs)
         self.bank = self.get_register(register_root)
         self.threshold = threshold if threshold is not None else cfg['threshold']
