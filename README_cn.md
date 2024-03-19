@@ -363,6 +363,8 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
         - Num of data per epoch: 2,560,000
         - Batch Size: 1024
         - Optimizer: AdamW
+        - Learning Rate: 0.0001 (如果模型無法順利收斂，可能是這個數值太大了。)
+        - Learning Rate Scheduler: PolynomialDecay
         - Setting:
             - squeeze: Conv2d -> Flatten -> Linear
 

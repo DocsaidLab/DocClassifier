@@ -168,6 +168,8 @@ ckpt/
 *.pt
 *.onnx
 *cache*
+*private*
+
 
 lcnet050_cosface_f256_r128_squeeze/
 

@@ -362,6 +362,9 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
         - Num of data per epoch: 2,560,000
         - Batch Size: 1024
         - Optimizer: AdamW
+        - Optimizer: AdamW
+        - Learning Rate: 0.0001 (If the model does not converge, it may be because this value is too large.)
+        - Learning Rate Scheduler: PolynomialDecay
         - Setting:
             - squeeze: Conv2d -> Flatten -> Linear
 
