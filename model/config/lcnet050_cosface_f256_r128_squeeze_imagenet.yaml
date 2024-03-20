@@ -12,7 +12,7 @@ global_settings:
   image_size: [128, 128]
 
 trainer:
-  max_epochs: 40
+  max_epochs: 20
   precision: 32
   val_check_interval: 1.0
   gradient_clip_val: 5
@@ -70,7 +70,7 @@ dataset:
     name: SyncDataset
     options:
       aug_ratio: 1
-      length_of_dataset: 2560000
+      length_of_dataset: 25600000
       use_imagenet: True
       use_clip: False
   valid_options:
@@ -81,7 +81,7 @@ dataset:
 dataloader:
   train_options:
     batch_size: -1
-    num_workers: 16
+    num_workers: 24
     shuffle: False
     drop_last: False
   valid_options:

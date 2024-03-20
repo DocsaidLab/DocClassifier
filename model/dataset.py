@@ -85,37 +85,12 @@ class ImageNetAug:
         h, w = image_size
         self.aug = A.Compose([
 
-            A.OneOf([
-                A.RandomResizedCrop(height=h, width=w, scale=(0.8, 1.0)),
-                DT.ShiftScaleRotate(
-                    shift_limit=0.1,
-                    scale_limit=0.1,
-                    rotate_limit=15,
-                )
-            ]),
-
-            A.OneOf([
-                A.MotionBlur(),
-                A.ZoomBlur(),
-                A.Defocus(radius=(3, 5)),
-                A.ImageCompression(quality_lower=0, quality_upper=50),
-            ]),
-
-            A.OneOf([
-                A.ISONoise(),
-                A.GaussNoise(),
-                A.Spatter(mode='mud')
-            ]),
-
-            A.OneOf([
-                A.ColorJitter(
-                    brightness=0.3,
-                    contrast=0.1,
-                    saturation=0.1,
-                ),
-                A.ToGray(),
-                A.ToSepia()
-            ]),
+            A.RandomResizedCrop(height=h, width=w, scale=(0.8, 1.0)),
+            DT.ShiftScaleRotate(
+                shift_limit=0.1,
+                scale_limit=0.1,
+                rotate_limit=15,
+            )
 
         ], p=p)
 
@@ -152,7 +127,7 @@ class SyncDataset:
 
         if self.use_clip:
             self.clip_model, self.preprocess = clip.load(
-                'ViT-B/32', device='cuda')
+                'ViT-B/32', device='cpu')
 
         self._build_dataset()
 
@@ -166,7 +141,7 @@ class SyncDataset:
                     tensor = Image.fromarray(file_path)
                 else:
                     tensor = Image.open(str(file_path))
-                tensor = self.preprocess(tensor).unsqueeze(0).to('cuda')
+                tensor = self.preprocess(tensor).unsqueeze(0).to('cpu')
                 clip_feats = self.clip_model.encode_image(tensor)
                 clip_feats = normalize(clip_feats, dim=-1)[0]
                 clip_feats = clip_feats.detach().cpu().numpy()

@@ -358,12 +358,11 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
 
     - **Settings**
         - Num of classes: 1,281,833
-        - Num of epochs: 40
-        - Num of data per epoch: 2,560,000
+        - Num of epochs: 20
+        - Num of data per epoch: 25,600,000
         - Batch Size: 1024
         - Optimizer: AdamW
-        - Optimizer: AdamW
-        - Learning Rate: 0.0001 (If the model does not converge, it may be because this value is too large.)
+        - Learning Rate: 0.001
         - Learning Rate Scheduler: PolynomialDecay
         - Setting:
             - squeeze: Conv2d -> Flatten -> Linear

@@ -153,9 +153,8 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
             clip_embs = self.clip_proj(clip_embs)
 
             clip_embs = normalize(clip_embs, dim=-1)
-            clip_feats = normalize(clip_feats, dim=-1)
-
             clip_embs = clip_embs.log_softmax(dim=-1)
+
             clip_feats = clip_feats.log_softmax(dim=-1)
 
             clip_loss = self.kl_loss(clip_embs, clip_feats)
