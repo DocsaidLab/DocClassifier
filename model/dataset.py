@@ -85,12 +85,52 @@ class ImageNetAug:
         h, w = image_size
         self.aug = A.Compose([
 
-            A.RandomResizedCrop(height=h, width=w, scale=(0.8, 1.0)),
-            DT.ShiftScaleRotate(
-                shift_limit=0.1,
-                scale_limit=0.1,
-                rotate_limit=15,
-            )
+            A.OneOf([
+                A.RandomResizedCrop(height=h, width=w, scale=(0.7, 1.0)),
+                DT.ShiftScaleRotate(
+                    shift_limit=0.1,
+                    scale_limit=0.1,
+                    rotate_limit=25,
+                )
+            ]),
+
+            A.OneOf([
+                A.MotionBlur(),
+                A.MedianBlur(),
+                A.GaussianBlur(),
+                A.ZoomBlur(),
+                A.Defocus(radius=(3, 5)),
+                A.ImageCompression(quality_lower=0, quality_upper=50),
+                A.RandomShadow(),
+                A.Spatter(mode='mud'),
+                A.CoarseDropout(max_holes=1, max_height=32,
+                                min_height=2, max_width=32, min_width=2),
+                A.RandomSunFlare(),
+                A.RandomFog(),
+                A.RandomRain()
+            ]),
+
+            A.OneOf([
+                A.ISONoise(),
+                A.GaussNoise(),
+                A.MultiplicativeNoise(
+                    multiplier=[0.5, 1.5],
+                    elementwise=True,
+                    per_channel=True
+                ),
+            ]),
+
+            A.OneOf([
+                A.ColorJitter(
+                    brightness=0.3,
+                    contrast=0.1,
+                    saturation=0.1,
+                ),
+                A.ToGray(),
+                A.ToSepia(),
+                A.RGBShift(),
+            ]),
+
 
         ], p=p)
 
@@ -125,9 +165,9 @@ class SyncDataset:
         self.aug_func = ImageNetAug(image_size=image_size, p=aug_ratio) \
             if use_imagenet else DefaultImageAug(image_size=image_size, p=aug_ratio)
 
-        if self.use_clip:
-            self.clip_model, self.preprocess = clip.load(
-                'ViT-B/32', device='cpu')
+        # if self.use_clip:
+        #     self.clip_model, self.preprocess = clip.load(
+        #         'ViT-B/32', device='cpu')
 
         self._build_dataset()
 
