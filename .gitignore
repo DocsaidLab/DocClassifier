@@ -161,7 +161,7 @@ cython_debug/
 
 tmp/
 data/證件母圖/
-docs_benchmark_dataset/
+*benchmark_dataset*
 register/
 private/
 ckpt/
@@ -214,3 +214,5 @@ lcnet050_cosface_f512_r128/
 lcnet050_cosface_f256_r128_squeeze_imagenet/
 
 lcnet050_cosface_f256_r128_squeeze_imagenet_clip/
+
+vit_cosface_f256_r128_squeeze_imagenet/

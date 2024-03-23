@@ -86,11 +86,11 @@ class ImageNetAug:
         self.aug = A.Compose([
 
             A.OneOf([
-                A.RandomResizedCrop(height=h, width=w, scale=(0.7, 1.0)),
+                A.RandomResizedCrop(height=h, width=w, scale=(0.8, 1.0)),
                 DT.ShiftScaleRotate(
                     shift_limit=0.1,
                     scale_limit=0.1,
-                    rotate_limit=25,
+                    rotate_limit=15,
                 )
             ]),
 
@@ -101,13 +101,6 @@ class ImageNetAug:
                 A.ZoomBlur(),
                 A.Defocus(radius=(3, 5)),
                 A.ImageCompression(quality_lower=0, quality_upper=50),
-                A.RandomShadow(),
-                A.Spatter(mode='mud'),
-                A.CoarseDropout(max_holes=1, max_height=32,
-                                min_height=2, max_width=32, min_width=2),
-                A.RandomSunFlare(),
-                A.RandomFog(),
-                A.RandomRain()
             ]),
 
             A.OneOf([
@@ -128,9 +121,11 @@ class ImageNetAug:
                 ),
                 A.ToGray(),
                 A.ToSepia(),
+                A.ChannelShuffle(),
+                A.ChannelDropout(),
                 A.RGBShift(),
+                A.InvertImg(),
             ]),
-
 
         ], p=p)
 
