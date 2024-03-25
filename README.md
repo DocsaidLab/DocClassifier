@@ -15,15 +15,15 @@
     <img src="./docs/title.jpg" width="800">
 </div>
 
-DocClassifier is a document image classification system based on Metric Learning technology, designed to address the issue of rapidly increasing and hard-to-define document types encountered by traditional classifiers when dealing with documents. It draws inspiration from facial recognition technology and is particularly suited for scenarios requiring quick identification and addition of text types, such as in the fields of fintech, banking, and the sharing economy.
+DocClassifier is a document image classification system built on Metric Learning technology, designed to address challenges faced by traditional classifiers in dealing with the rapid increase and difficult-to-define nature of document types. It draws inspiration from facial recognition technology, making it particularly suited for scenarios that require quick identification and addition of new document types, such as in fintech, banking, and the sharing economy.
 
-In our basic experimental model, we utilized the PartialFC feature learning architecture, incorporating techniques like CosFace and ArcFace, allowing it to classify accurately without pre-setting a large number of categories. To enable the model to learn diverse features, we collected around 650 documents and 16,000 images for scene classification, and expanded the dataset to approximately 400,000 categories through image augmentation techniques.
+In our model design, we employed the PartialFC feature learning architecture, which integrates technologies like CosFace and ArcFace, allowing for precise classification without the need for a large number of predefined categories. To enable the model to learn a diverse set of features, we collected approximately 650 text images and 16,000 images for scene classification in our baseline model, and expanded the dataset to around 400,000 classes through image augmentation techniques.
 
-In further experiments, we introduced the ImageNet-1K and CLIP models. Using the ImageNet-1K dataset as a base, we expanded the number of categories to about 1.3 million, providing the model with a richer variety of visual changes and increasing data diversity. This approach improved the performance in the TPR@FPR=1e-4 benchmark by about 4.1% (from 77.2% to 81.3%) compared to the original baseline model. By introducing the CLIP model on top of ImageNet-1K and conducting knowledge distillation during training, the performance could be further improved by about 4.6% (from 81.3% to 85.9%) in the TPR@FPR=1e-4 benchmark.
+Furthermore, in our advanced experiments, we introduced the ImageNet-1K and CLIP models. We used the ImageNet-1K dataset as a foundation, treating each image as a separate category. This approach expanded the number of classification categories to about 1.3 million, enriching the model with a wider variety of visual changes and increasing data diversity. In a comparison metric of TPR@FPR=1e-4, this resulted in a performance improvement of approximately 4.1% (from 77.2% to 81.3%). Incorporating the CLIP model on top of ImageNet-1K and applying knowledge distillation during training further increased the performance by about 4.6% (from 81.3% to 85.9%) at the TPR@FPR=1e-4 benchmark. In our latest experiments, combining BatchNorm and LayerNorm achieved promising results, improving the TPR@FPR=1e-4 metric by approximately 4.4% (from 85.9% to 90.3%) over the original CLIP distillation model.
 
-In terms of technology selection, PyTorch is used as the primary training platform, with ONNXRuntime facilitating model inference to ensure efficient operation on both CPUs and GPUs. We also support converting models to ONNX format for easy deployment across different platforms. For scenarios requiring model quantization, we offer quantization capabilities based on the ONNXRuntime API to enhance the model's operational efficiency and flexibility.
+For technology selection, PyTorch was used as the main training platform, with ONNXRuntime facilitating model inference, ensuring efficient operation on both CPUs and GPUs. We also support converting models to the ONNX format for easy deployment across different platforms. For scenarios requiring model quantization, we provide a quantization feature based on the ONNXRuntime API to enhance the model's operational efficiency and flexibility.
 
-In testing, our model demonstrated an accuracy rate of over 99% using a zero-shot training strategy (TPR@FPR=1e-1). Importantly, DocClassifier allows for the quick addition of document types without the need for retraining, akin to the registration process in facial recognition systems, thereby enhancing the system's adaptability and scalability. In practical applications, our model not only achieved real-time inference speeds but also met the needs of the vast majority of application scenarios.
+In testing, our model demonstrated over 90% accuracy under the condition of a one-in-ten-thousand (TPR@FPR=1e-4) error rate. Importantly, DocClassifier allows for the rapid addition of new document types without the need for retraining, similar to the registration process in facial recognition systems, thus enhancing the system's adaptability and scalability. In practical applications, our model not only achieves real-time inference speeds but also meets the demands of the vast majority of use cases.
 
 ---
 
@@ -441,6 +441,25 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
             <img src="./docs/cosface_result_squeeze_imagenet_clip.jpg" width="800">
         </div>
 
+- **lcnet050_cosface_f256_r128_squeeze_imagenet_clip_20240325 results**
+
+    - **TPR@FPR=1e-4: 0.905**
+
+        <div align="center">
+
+        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
+        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+        |    TPR    |  0.842  |  0.905  |  0.953  |  0.984  |  0.998  |   1.0   |
+        | Threshold |  0.706  |  0.685  |  0.658  |  0.623  |  0.576  |  0.350  |
+
+        </div>
+
+    - **TSNE & PCA & ROC Curve**
+
+        <div align="center">
+            <img src="./docs/cosface_result_squeeze_imagenet_clip_20240325.jpg" width="800">
+        </div>
+
 ### Discussion of Results
 
 - You might consider using a margin loss, such as CosFace or ArcFace. However, regardless of the choice, it's crucial to pair it with [PartialFC](https://arxiv.org/abs/2203.15565) to significantly increase training speed, stabilize convergence results, and improve performance. We would also like to express our special thanks to the implementation by [insightface](https://github.com/deepinsight/insightface) . If you have time, consider giving them a star.
@@ -458,6 +477,8 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
 - In the process of connecting the Backbone and Head, using `nn.Flatten` to capture all information and integrating it into the feature encoding layer with `nn.Linear` proves to be the most effective approach. However, the downside is that it requires a substantial amount of parameters — in scenarios where lightweight models are crucial, even an increase of 1MB in model size is considered significant. To address this, we experimented with two approaches. Firstly, we tried using `nn.GlobalAvgPool2d` to gather all information and then integrated it into the feature encoding layer with `nn.Linear`. Secondly, we applied `nn.Conv2d` to reduce the number of channels to a quarter of the original count, a step we refer to as **Squeeze**, followed by using `nn.Flatten` in combination with `nn.Linear` for integration into the feature encoding layer. Our experiments show that the **Squeeze** strategy is the right choice. This strategy not only effectively reduces the model size but also maintains its performance.
 
 - Introducing features from the CLIP model is an effective strategy that not only enhances the model's performance but also its generalization ability. The essence of this strategy is to use knowledge distillation from the CLIP model to incorporate its features into our model. This approach has proven to be highly effective, likely because the CLIP model possesses a vast repository of knowledge, enabling our model to learn more robust feature representations.
+
+- Adding a BatchNorm layer after LayerNorm is the key to achieving 90% accuracy. We believe this is because LayerNorm and BatchNorm complement each other. LayerNorm helps the model learn more stable features, while BatchNorm helps the model learn cross-sample feature representations.
 
 ---
 

@@ -216,3 +216,7 @@ lcnet050_cosface_f256_r128_squeeze_imagenet/
 lcnet050_cosface_f256_r128_squeeze_imagenet_clip/
 
 vit_cosface_f256_r128_squeeze_imagenet/
+
+lcnet050_cosface_f256_r128_squeeze_lbn_imagenet/
+
+lcnet050_cosface_f256_r128_squeeze_lbn_imagenet_finetune/

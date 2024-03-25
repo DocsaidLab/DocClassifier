@@ -17,13 +17,13 @@
 
 DocClassifier 是一個基於度量學習（Metric Learning）技術的文件圖像分類系統，旨在解決傳統分類器處理文本圖像時遇到的文件類型快速增加且難以預先定義的問題。它借鑑了人臉辨識技術，尤其適合於需要迅速辨識和新增文本類型的場合，例如在金融科技、銀行和共享經濟等領域中。
 
-在我們設計的基本實驗模型中使用了 PartialFC 特徵學習架構，結合了 CosFace 和 ArcFace 等技術，使其能在沒有預先設定大量分類的情況下，精準地進行分類。為了讓模型能學習到多樣化的特徵，我們收集了大約 650 張文本圖像和 16000 張用於場景分類的圖像，並通過圖像增強技術擴大數據集至約 40 萬類。
+在我們設計的模型中使用了 PartialFC 特徵學習架構，其結合了 CosFace 和 ArcFace 等技術，使其能在沒有預先設定大量分類的情況下，精準地進行分類。為了讓模型能學習到多樣化的特徵，我們在基線模型（baseline）中，收集了大約 650 張文本圖像和 16000 張用於場景分類的圖像，並通過圖像增強技術擴大數據集至約 40 萬類。
 
-我們在更進一步的實驗中，引入了 ImageNet-1K 和 CLIP 模型。我們使用 ImageNet-1K 資料集作為基底類別，將類別擴充到約 130 萬類，給予模型更豐富的圖面變化，增加資料多樣性，在 TPR@FPR=1e-4 的比較基準中，比起原有的基線模型效果提高了約 4.1%（77.2%->81.3%）。若在 ImageNet-1K 的基礎上再引入 CLIP 模型，在訓練的過程中進行知識蒸餾，則效果可以在 TPR@FPR=1e-4 的比較基準中再往上提升約 4.6%（81.3%->85.9%）。
+接著，我們在更進一步的實驗中，引入了 ImageNet-1K 和 CLIP 模型。我們使用 ImageNet-1K 資料集作為基底，將每張影像視為一個類別，透過這個操作，可以將分類的類別數量擴充到約 130 萬類，給予模型更豐富的圖面變化，增加資料多樣性。在 TPR@FPR=1e-4 的比較基準中，比起原有的基線模型效果提高了約 4.1%（77.2%->81.3%）。若在 ImageNet-1K 的基礎上再引入 CLIP 模型，在訓練的過程中進行知識蒸餾，則效果可以在 TPR@FPR=1e-4 的比較基準中再往上提升約 4.6%（81.3%->85.9%）。在最新的實驗中，我們嘗試結合 BatchNorm 和 LayerNorm，並且取得可喜的結果，在原本的 CLIP 蒸餾模型基礎上，將 TPR@FPR=1e-4 的效果提高了約 4.4%（85.9%->90.3%）。
 
 在技術選擇上，PyTorch 被用作主要的訓練平台，並通過 ONNXRuntime 進行模型的推論，確保了模型在 CPU 和 GPU 上都能高效運行。我們也支持將模型轉換為 ONNX 格式，方便在不同平台上部署。針對需要模型量化的情況，我們提供了基於 ONNXRuntime API 的量化功能，以提高模型的運行效率和靈活性。
 
-在測試中，我們的模型展示了超過 99% 的準確率（TPR@FPR=1e-1），使用了 zero-shot 訓練策略。重要的是，DocClassifier 允許快速新增證件類型而無需重新訓練，類似於人臉辨識系統的註冊過程，這提高了系統的適應性和擴展性。在實際應用中，我們的模型不僅實現了即時推論速度，還滿足了絕大多數應用場景的需求。
+在測試中，我們的模型在基於萬分之一（TPR@FPR=1e-4）錯誤率的條件下，展示了超過 90% 的準確率。重要的是，DocClassifier 允許快速新增證件類型而無需重新訓練，類似於人臉辨識系統的註冊過程，這提高了系統的適應性和擴展性。在實際應用中，我們的模型不僅實現了即時推論速度，還滿足了絕大多數應用場景的需求。
 
 ---
 
@@ -359,7 +359,7 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
     - **Settings**
         - Num of classes: 1,281,833
-        - Num of epochs: 20
+        - Num of epochs: 40
         - Num of data per epoch: 25,600,000 (如果模型無法順利收斂，可能是資料量不足。)
         - Batch Size: 1024
         - Optimizer: AdamW
@@ -372,16 +372,18 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
     <div>
 
-    | Name | Dataset | with CLIP | Num_Classes | TPR@FPR=1e-4 | ROC |
-    | --- | :---: | :---: | :---: | :---: | :---: |
-    | lcnet050-f256-r128-ln-cos-squeeze | Indoor | X | 390,144 | 0.772 | 0.9958 |
-    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | X | 1,281,833 | 0.813 | 0.9961 |
-    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | V | 1,281,833 | **0.859** | **0.9982** |
+    | Name | Dataset | with CLIP | Norm | Num_Classes | TPR@FPR=1e-4 | ROC |
+    | --- | :---: | :---: | :---: | :---: | :---: | :---: |
+    | lcnet050-f256-r128-ln-cos-squeeze | Indoor | X | LN | 390,144 | 0.772 | 0.9958 |
+    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | X | LN | 1,281,833 | 0.813 | 0.9961 |
+    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | V | LN | 1,281,833 | **0.859** | **0.9982** |
+    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | V | LN + BN | 1,281,833 | **0.905** | **0.9989** |
 
     </div>
 
     - 使用 ImageNet-1K 將類別擴充到約 130 萬類，給予模型更豐富的圖面變化，增加資料多樣性，將效果提高 4.1%。
     - 在 ImageNet-1K 的基礎上再引入 CLIP 模型，在訓練的過程中進行知識蒸餾，則效果可以在 TPR@FPR=1e-4 的比較基準中再往上提升 4.6%。
+    - 若將 BatchNorm 和 LayerNorm 同時使用，可以將結果提升到 90.5%。
 
 ---
 
@@ -446,6 +448,25 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
             <img src="./docs/cosface_result_squeeze_imagenet_clip.jpg" width="800">
         </div>
 
+- **lcnet050_cosface_f256_r128_squeeze_imagenet_clip_20240325 results**
+
+    - **TPR@FPR=1e-4: 0.905**
+
+        <div align="center">
+
+        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
+        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+        |    TPR    |  0.842  |  0.905  |  0.953  |  0.984  |  0.998  |   1.0   |
+        | Threshold |  0.706  |  0.685  |  0.658  |  0.623  |  0.576  |  0.350  |
+
+        </div>
+
+    - **TSNE & PCA & ROC Curve**
+
+        <div align="center">
+            <img src="./docs/cosface_result_squeeze_imagenet_clip_20240325.jpg" width="800">
+        </div>
+
 ### 結果討論
 
 - 你可能會考慮要用什麼 Margin loss，可能是 CosFace 或是 ArcFace。但不管用什麼，請一定要搭配 [PartialFC](https://arxiv.org/abs/2203.15565)，訓練速度大幅提高，收斂結果穩定，且效能更好。在此我們也特別感謝 [insightface](https://github.com/deepinsight/insightface) 的實作，若您有空的話不妨去幫他們點個 star。
@@ -463,6 +484,8 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 - 在 Backbone 與 Head 串接的過程中，使用 `nn.Flatten` 取得所有資訊並使用 `nn.Linear` 整合到特徵編碼層效果是最好的！但是缺點是需要佔用大量的參數 —— 在輕量模型的場景中，增加 1MB 的模型大小都是一件令人髮指的事情。為此我們嘗試了兩個方向，其一：使用 `nn.GlobalAvgPool2d` 取得所有資訊並使用 `nn.Linear` 整合到特徵編碼層；其二：使用 `nn.Conv2d` 先將通道數降維至原本的 1/4 ，這邊我們稱為 Squeeze，接著再使用 `nn.Flatten` 搭配 `nn.Linear` 整合到特徵編碼層。經過實驗，使用 Squeeze 的策略是對的。這個策略不僅能夠有效地減少模型大小，同時維持模型的效能。
 
 - 引入 CLIP 的特徵是一個不錯的策略，這個策略不僅能夠提高模型的效能，同時也能夠提高模型的泛化能力。這個策略的核心是利用 CLIP 模型對我們的模型進行知識蒸餾，從而將 CLIP 模型的特徵引入到我們的模型中。這個策略的效果是非常好的，我們認為這是因為 CLIP 模型具有豐富的知識，能夠幫助我們的模型學習到更穩健的特徵表示。
+
+- 在 LayerNorm 之後再加上一層 BatchNorm，是讓我們模型可以站上 90% 的關鍵。我們認為這是因為 LayerNorm 和 BatchNorm 兩者的特性互補，LayerNorm 有助於模型學習到更穩定的特徵，而 BatchNorm 則有助於模型學習到跨樣本的特徵表示。
 
 ---
 
