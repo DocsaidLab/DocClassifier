@@ -265,7 +265,7 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **目標類別數量比較**
 
-    <div>
+    <div align="center">
 
     | Name | Num_Classes | TPR@FPR=1e-4 | ROC |
     | --- | ---: | :---: | :---: |
@@ -279,7 +279,7 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **MarginLoss 比較**
 
-    <div>
+    <div align="center">
 
     | Name | TPR@FPR=1e-4 | ROC |
     | --- | :---: | :---: |
@@ -294,7 +294,7 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **BatchNorm vs LayerNorm**
 
-    <div>
+    <div align="center">
 
     | Name | TPR@FPR=1e-4 | ROC |
     | --- | :---: | :---: |
@@ -307,7 +307,7 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **Pretrain vs From-Scratch**
 
-    <div>
+    <div align="center">
 
     | Name | TPR@FPR=1e-4 | ROC |
     | --- | :---: | :---: |
@@ -320,7 +320,7 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **降低模型規模的方法**
 
-    <div>
+    <div align="center">
 
     | Name | TPR@FPR=1e-4 | ROC | Size (MB) | FLOPs (G) |
     | --- | :---: | :---: | :---: | :---: |
@@ -342,7 +342,7 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
 - **加大 Backbone**
 
-    <div>
+    <div align="center">
 
     | Name | TPR@FPR=1e-4 | ROC |
     | --- | :---: | :---: |
@@ -370,101 +370,46 @@ print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
 
     ---
 
-    <div>
+    <div align="center">
 
-    | Name | Dataset | with CLIP | Norm | Num_Classes | TPR@FPR=1e-4 | ROC |
-    | --- | :---: | :---: | :---: | :---: | :---: | :---: |
-    | lcnet050-f256-r128-ln-cos-squeeze | Indoor | X | LN | 390,144 | 0.772 | 0.9958 |
-    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | X | LN | 1,281,833 | 0.813 | 0.9961 |
-    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | V | LN | 1,281,833 | **0.859** | **0.9982** |
-    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | V | LN + BN | 1,281,833 | **0.905** | **0.9989** |
+    | Dataset | with CLIP | Norm | Num_Classes | TPR@FPR=1e-4 | ROC |
+    | :---: | :---: | :---: | :---: | :---: | :---: |
+    | Indoor | X | LN | 390,144 | 0.772 | 0.9958 |
+    | ImageNet-1K | X | LN | 1,281,833 | 0.813 | 0.9961 |
+    | ImageNet-1K | V | LN | 1,281,833 | 0.859 | 0.9982 |
+    | ImageNet-1K | V | LN + BN | 1,281,833 | **0.912** | **0.9984** |
 
     </div>
 
     - 使用 ImageNet-1K 將類別擴充到約 130 萬類，給予模型更豐富的圖面變化，增加資料多樣性，將效果提高 4.1%。
     - 在 ImageNet-1K 的基礎上再引入 CLIP 模型，在訓練的過程中進行知識蒸餾，則效果可以在 TPR@FPR=1e-4 的比較基準中再往上提升 4.6%。
-    - 若將 BatchNorm 和 LayerNorm 同時使用，可以將結果提升到 90.5%。
+    - 若將 BatchNorm 和 LayerNorm 同時使用，可以將結果提升到 91.2%。
 
 ---
 
-### 開源模型閾值設定表
+### 模型閾值設定表
 
-我們從所有做過的實驗中，挑了幾個比較有代表性的模型釋放出來，並且提供了閾值設定表，以方便您在部署時使用。
+我們從所有做過的實驗中，挑了比較有代表性的模型釋放出來，並且提供了閾值設定表，以方便您在部署時使用。
 
-- **lcnet050-f256-r128-ln-cos results**
 
-    - **TPR@FPR=1e-4: 0.784**
+- **lcnet050_cosface_f256_r128_squeeze_imagenet_clip_20240326 results**
+
+    - **Setting `model_cfg` to "20240326"**
+    - **TPR@FPR=1e-4: 0.912**
 
         <div align="center">
 
         |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
         | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.673  |  0.784  |  0.879  |  0.950  |  0.992  |   1.0   |
-        | Threshold |  0.751  |  0.726  |  0.697  |  0.663  |  0.608  |  0.341  |
+        |    TPR    |  0.856  |  0.912  |  0.953  |  0.980  |  0.996  |   1.0   |
+        | Threshold |  0.705  |  0.682  |  0.657  |  0.626  |  0.581  |  0.359  |
 
         </div>
 
     - **TSNE & PCA & ROC Curve**
 
         <div align="center">
-            <img src="./docs/cosface_result.jpg" width="800">
-        </div>
-
-- **lcnet050-f256-r128-ln-cos-squeeze results**
-
-    - **TPR@FPR=1e-4: 0.772**
-
-        <div align="center">
-
-        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
-        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.674  |  0.772  |  0.864  |  0.940  |  0.989  |   1.0   |
-        | Threshold |  0.726  |  0.703  |  0.677  |  0.645  |  0.594  |  0.358  |
-
-        </div>
-
-    - **TSNE & PCA & ROC Curve**
-
-        <div align="center">
-            <img src="./docs/cosface_result_squeeze.jpg" width="800">
-        </div>
-
-- **lcnet050_cosface_f256_r128_squeeze_imagenet_clip results**
-
-    - **TPR@FPR=1e-4: 0.859**
-
-        <div align="center">
-
-        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
-        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.764  |  0.859  |  0.926  |  0.972  |  0.996  |   1.0   |
-        | Threshold |  0.756  |  0.735  |  0.713  |  0.684  |  0.637  |  0.368  |
-
-        </div>
-
-    - **TSNE & PCA & ROC Curve**
-
-        <div align="center">
-            <img src="./docs/cosface_result_squeeze_imagenet_clip.jpg" width="800">
-        </div>
-
-- **lcnet050_cosface_f256_r128_squeeze_imagenet_clip_20240325 results**
-
-    - **TPR@FPR=1e-4: 0.905**
-
-        <div align="center">
-
-        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
-        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.842  |  0.905  |  0.953  |  0.984  |  0.998  |   1.0   |
-        | Threshold |  0.706  |  0.685  |  0.658  |  0.623  |  0.576  |  0.350  |
-
-        </div>
-
-    - **TSNE & PCA & ROC Curve**
-
-        <div align="center">
-            <img src="./docs/cosface_result_squeeze_imagenet_clip_20240325.jpg" width="800">
+            <img src="./docs/cosface_result_squeeze_imagenet_clip_20240326.jpg" width="400">
         </div>
 
 ### 結果討論

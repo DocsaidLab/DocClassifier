@@ -264,7 +264,7 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
 
 - **Comparison Based on the Number of Target Classes**
 
-    <div>
+    <div align="center">
 
     | Name | Num_Classes | TPR@FPR=1e-4 | ROC |
     | --- | ---: | :---: | :---: |
@@ -278,7 +278,7 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
 
 - **MarginLoss Comparison**
 
-    <div>
+    <div align="center">
 
     | Name | TPR@FPR=1e-4 | ROC |
     | --- | :---: | :---: |
@@ -293,7 +293,7 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
 
 - **BatchNorm vs LayerNorm**
 
-    <div>
+    <div align="center">
 
     | Name | TPR@FPR=1e-4 | ROC |
     | --- | :---: | :---: |
@@ -306,7 +306,7 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
 
 - **Pretrain vs From-Scratch**
 
-    <div>
+    <div align="center">
 
     | Name | TPR@FPR=1e-4 | ROC |
     | --- | :---: | :---: |
@@ -319,7 +319,7 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
 
 - **Ways to reduce model size**
 
-    <div>
+    <div align="center">
 
     | Name | TPR@FPR=1e-4 | ROC | Size (MB) | FLOPs (G) |
     | --- | :---: | :---: | :---: | :---: |
@@ -341,7 +341,7 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
 
 - **Increase Backbone**
 
-    <div>
+    <div align="center">
 
     | Name | TPR@FPR=1e-4 | ROC |
     | --- | :---: | :---: |
@@ -369,95 +369,45 @@ Due to privacy concerns, we are unable to open-source this dataset and can only 
 
     ---
 
-    <div>
+    <div align="center">
 
-    | Name | Dataset | with CLIP | Num_Classes | TPR@FPR=1e-4 | ROC |
-    | --- | :---: | :---: | :---: | :---: | :---: |
-    | lcnet050-f256-r128-ln-cos-squeeze | Indoor | X | 390,144 | 0.772 | 0.9958 |
-    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | X | 1,281,833 | 0.813 | 0.9961 |
-    | lcnet050-f256-r128-ln-cos-squeeze | ImageNet-1K | V | 1,281,833 | **0.859** | **0.9982** |
+    | Dataset | with CLIP | Norm | Num_Classes | TPR@FPR=1e-4 | ROC |
+    | :---: | :---: | :---: | :---: | :---: | :---: |
+    | Indoor | X | LN | 390,144 | 0.772 | 0.9958 |
+    | ImageNet-1K | X | LN | 1,281,833 | 0.813 | 0.9961 |
+    | ImageNet-1K | V | LN | 1,281,833 | 0.859 | 0.9982 |
+    | ImageNet-1K | V | LN + BN | 1,281,833 | **0.912** | **0.9984** |
 
     </div>
 
     - By using ImageNet-1K to expand the number of categories to approximately 1.3 million, the model is provided with a richer variety of visual changes, increasing data diversity and improving performance by 4.1%.
     - Building on the foundation of ImageNet-1K, introducing the CLIP model and conducting knowledge distillation during training can further enhance performance by 4.6% in the comparison benchmark of TPR@FPR=1e-4.
+    - Combining BatchNorm and LayerNorm can improve the TPR@FPR=1e-4 metric by approximately 91.2%.
 
 ---
 
-- **lcnet050-f256-r128-ln-cos results**
+## Threshold Setting
 
-    - **TPR@FPR=1e-4: 0.784**
+In all the experiments we have done, we have selected some representative models and provided a threshold setting table to facilitate your use during deployment.
+
+- **lcnet050_cosface_f256_r128_squeeze_imagenet_clip_20240326 results**
+
+    - **Setting `model_cfg` to "20240326"**
+    - **TPR@FPR=1e-4: 0.912**
 
         <div align="center">
 
         |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
         | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.673  |  0.784  |  0.879  |  0.950  |  0.992  |   1.0   |
-        | Threshold |  0.751  |  0.726  |  0.697  |  0.663  |  0.608  |  0.341  |
+        |    TPR    |  0.856  |  0.912  |  0.953  |  0.980  |  0.996  |   1.0   |
+        | Threshold |  0.705  |  0.682  |  0.657  |  0.626  |  0.581  |  0.359  |
 
         </div>
 
     - **TSNE & PCA & ROC Curve**
 
         <div align="center">
-            <img src="./docs/cosface_result.jpg" width="800">
-        </div>
-
-- **lcnet050-f256-r128-ln-cos-squeeze results**
-
-    - **TPR@FPR=1e-4: 0.772**
-
-        <div align="center">
-
-        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
-        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.674  |  0.772  |  0.864  |  0.940  |  0.989  |   1.0   |
-        | Threshold |  0.726  |  0.703  |  0.677  |  0.645  |  0.594  |  0.358  |
-
-        </div>
-
-    - **TSNE & PCA & ROC Curve**
-
-        <div align="center">
-            <img src="./docs/cosface_result_squeeze.jpg" width="800">
-        </div>
-
-- **lcnet050_cosface_f256_r128_squeeze_imagenet_clip results**
-
-    - **TPR@FPR=1e-4: 0.859**
-
-        <div align="center">
-
-        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
-        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.764  |  0.859  |  0.926  |  0.972  |  0.996  |   1.0   |
-        | Threshold |  0.756  |  0.735  |  0.713  |  0.684  |  0.637  |  0.368  |
-
-        </div>
-
-    - **TSNE & PCA & ROC Curve**
-
-        <div align="center">
-            <img src="./docs/cosface_result_squeeze_imagenet_clip.jpg" width="800">
-        </div>
-
-- **lcnet050_cosface_f256_r128_squeeze_imagenet_clip_20240325 results**
-
-    - **TPR@FPR=1e-4: 0.905**
-
-        <div align="center">
-
-        |    FPR    |  1e-05  |  1e-04  |  1e-03  |  1e-02  |  1e-01  |   1     |
-        | :-------: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-        |    TPR    |  0.842  |  0.905  |  0.953  |  0.984  |  0.998  |   1.0   |
-        | Threshold |  0.706  |  0.685  |  0.658  |  0.623  |  0.576  |  0.350  |
-
-        </div>
-
-    - **TSNE & PCA & ROC Curve**
-
-        <div align="center">
-            <img src="./docs/cosface_result_squeeze_imagenet_clip_20240325.jpg" width="800">
+            <img src="./docs/cosface_result_squeeze_imagenet_clip_20240326.jpg" width="400">
         </div>
 
 ### Discussion of Results

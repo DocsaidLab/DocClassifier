@@ -34,23 +34,11 @@ def preprocess(
 class Inference:
 
     configs = {
-        'lcnet050_cosface': {
-            'model_path': 'lcnet050_cosface_f256_r128_fp32.onnx',
-            'file_id': 'fbkyd3QqbFoLjSn',
+        '20240326': {
+            'model_path': 'lcnet050_cosface_f256_r128_squeeze_lbn_imagenet_finetune_20240326_fp32.onnx',
+            'file_id': 'jd47gepc3XFKw5s',
             'img_size_infer': (128, 128),
-            'threshold': 0.663  # FPR=0.01
-        },
-        'lcnet050_cosface_squeeze': {
-            'model_path': 'lcnet050_cosface_f256_r128_squeeze_fp32.onnx',
-            'file_id': 'N3KMZsrzCp8pdqW',
-            'img_size_infer': (128, 128),
-            'threshold': 0.645  # FPR=0.01
-        },
-        'lcnet050_cosface_squeeze_imagenet_clip': {
-            'model_path': 'lcnet050_cosface_f256_r128_squeeze_imagenet_clip_fp32.onnx',
-            'file_id': 'aNTnHMwpRnk37Ej',
-            'img_size_infer': (128, 128),
-            'threshold': 0.684  # FPR=0.01
+            'threshold': 0.627  # FPR=0.01
         },
     }
 
@@ -58,7 +46,7 @@ class Inference:
         self,
         gpu_id: int = 0,
         backend: D.Backend = D.Backend.cpu,
-        model_cfg: str = 'lcnet050_cosface_squeeze_imagenet_clip',
+        model_cfg: str = '20240326',
         threshold: float = None,
         register_root: Union[str, D.Path] = None,
         **kwargs

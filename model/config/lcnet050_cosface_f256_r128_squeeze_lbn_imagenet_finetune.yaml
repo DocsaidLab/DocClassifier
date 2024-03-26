@@ -3,7 +3,7 @@ common:
   image_size: [128, 128]
   is_restore: True
   restore_ind: "2024-03-24-20-15-19"
-  restore_ckpt: ""
+  restore_ckpt: "epoch=2-step=7500.ckpt"
   preview_batch: 1000
   use_imagenet: True
   use_clip: True
