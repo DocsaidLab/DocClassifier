@@ -47,8 +47,22 @@ class DocClassifier:
                 **kwargs
             )
 
+    @property
+    def bank(self) -> dict:
+        return self.classifier.bank
+
+    @property
+    def threshold(self) -> float:
+        return self.classifier.threshold
+
     def list_models(self) -> list:
         return list(self.classifier.configs.keys())
+
+    def get_register(self, register_root: Union[str, D.Path]) -> dict:
+        return self.classifier.get_register(register_root)
+
+    def extract_feature(self, img: np.ndarray) -> np.ndarray:
+        return self.classifier.extract_feature(img)
 
     def __call__(self, img: np.ndarray,) -> Union[str, None]:
         most_similar, max_score = self.classifier(img)
