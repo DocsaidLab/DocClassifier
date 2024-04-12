@@ -633,9 +633,9 @@ The following shows how to load the dataset:
 
 ```python
 import docsaidkit as D
-from model.dataset import SyncDataset
+from model.dataset import SynthDataset
 
-ds = SyncDataset(
+ds = SynthDataset(
     image_size=(480, 800),
     return_tensor=False # If set to True, the returned data will be in the format of torch.Tensor for training.
 )
@@ -646,7 +646,7 @@ D.imwrite(img, f'label_{label}.jpg')
 ```
 
 <div align="center">
-    <img src="./docs/test_sync_dataset.jpg" width="300">
+    <img src="./docs/test_synth_dataset.jpg" width="300">
 </div>
 
 - Please note: This is a fully synthetic dataset, so we have implemented a mechanism for random image generation. Do not be surprised if the image you receive differs from the example shown above.

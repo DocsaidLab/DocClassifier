@@ -66,7 +66,7 @@ quantize:
 
 dataset:
   train_options:
-    name: SyncDataset
+    name: SynthDataset
     options:
       aug_ratio: 1
       length_of_dataset: 256000

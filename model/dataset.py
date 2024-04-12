@@ -156,7 +156,7 @@ class ImageNetAugFintune:
         return img
 
 
-class SyncDataset:
+class SynthDataset:
 
     def __init__(
         self,

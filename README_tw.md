@@ -637,9 +637,9 @@ def _build_dataset(self):
 
 ```python
 import docsaidkit as D
-from model.dataset import SyncDataset
+from model.dataset import SynthDataset
 
-ds = SyncDataset(
+ds = SynthDataset(
     image_size=(480, 800),
     return_tensor=False # 如果設定為 True，則回傳的資料會是訓練用的 torch.Tensor 格式。
 )
@@ -650,7 +650,7 @@ D.imwrite(img, f'label_{label}.jpg')
 ```
 
 <div align="center">
-    <img src="./docs/test_sync_dataset.jpg" width="300">
+    <img src="./docs/test_synth_dataset.jpg" width="300">
 </div>
 
 - 請注意：這是全合成資料集，因此我們在輸出影像時給予隨機出圖的機制，如果您得到的影像和上面的範例不一樣，請不要驚訝。
