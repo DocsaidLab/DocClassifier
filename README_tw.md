@@ -14,11 +14,11 @@
     <img src="./docs/title.jpg" width="800">
 </div>
 
-DocClassifier是一個基於Metric Learning技術的文件圖像分類系統，受到傳統分類器面臨的挑戰啟發，解決了文件類型快速增加和難以定義的問題。它採用了PartialFC特徵學習架構，集成了CosFace和ArcFace等技術，使模型能夠在不需要大量預定義類別的情況下進行精確分類。通過擴展數據集和引入ImageNet-1K和CLIP模型，我們提高了性能並增加了模型的適應性和可擴展性。模型使用PyTorch進行訓練，在ONNXRuntime上進行推理，並支持將模型轉換為ONNX格式以便在不同平台上部署。在測試中，我們的模型達到了超過90%的準確率，並具有快速推理速度和快速添加新文件類型的能力，從而滿足了大多數應用場景的需求。
+DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統，受到傳統分類器面臨的挑戰啟發，解決了文件類型快速增加和難以定義的問題。它採用了 PartialFC 特徵學習架構，集成了 CosFace 和 ArcFace 等技術，使模型能夠在不需要大量預定義類別的情況下進行精確分類。通過擴展數據集和引入 ImageNet-1K 和 CLIP 模型，我們提高了性能並增加了模型的適應性和可擴展性。模型使用 PyTorch 進行訓練，在 ONNXRuntime 上進行推理，並支持將模型轉換為 ONNX 格式以便在不同平台上部署。在測試中，我們的模型達到了超過 90%的準確率，並具有快速推理速度和快速添加新文件類型的能力，從而滿足了大多數應用場景的需求。
 
 ## 快速開始
 
-套件安裝和使用的方式，請參閱 [**DocClassifier Documents**](https://docsaid.org/docclassifier/intro/)。
+套件安裝和使用的方式，請參閱 [**DocClassifier Documents**](https://docsaid.org/docs/docclassifier/intro/)。
 
 ---
 

@@ -18,7 +18,7 @@ DocClassifier is a document image classification system utilizing Metric Learnin
 
 ## Quick Start
 
-For package installation and usage instructions, please refer to the [**DocClassifier Documents**](https://docsaid.org/en/docclassifier/intro/).
+For package installation and usage instructions, please refer to the [**DocClassifier Documents**](https://docsaid.org/en/docs/docclassifier/intro/).
 
 ---
 
