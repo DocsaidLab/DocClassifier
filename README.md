@@ -20,7 +20,7 @@ DocClassifier is a document image classification system based on Metric Learning
 
 Given the extensive usage instructions and settings explanations for this project, we only summarize the "Model Design" section here.
 
-For more details, please refer to the [**DocClassifier Documents**](https://docsaid.org/docs/docclassifier/intro/).
+For more details, please refer to the [**DocClassifier Documents**](https://docsaid.org/en/docs/category/docclassifier/).
 
 ## Model Design
 
