@@ -20,7 +20,7 @@ DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統�
 
 由於本專案的相關使用方式和設定的說明佔據非常多的篇幅，因此我們謹摘要「模型設計」的部分放在這裡。
 
-如果你想知道更多的細節，請參閱 [**DocClassifier Documents**](https://docsaid.org/docs/category/docclassifier/)。
+如果你想知道更多的細節，請參閱 [**DocClassifier Documents**](https://docsaid.org/docs/docclassifier/)。
 
 ## 模型設計
 

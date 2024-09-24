@@ -163,6 +163,7 @@ tmp/
 data/證件母圖/
 *benchmark_dataset*
 register/
+registry/
 private/
 ckpt/
 *.pt
