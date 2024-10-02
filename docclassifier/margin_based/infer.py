@@ -36,7 +36,7 @@ class Inference:
     configs = {
         '20240326': {
             'model_path': 'lcnet050_cosface_f256_r128_squeeze_lbn_imagenet_finetune_20240326_fp32.onnx',
-            'file_id': 'jd47gepc3XFKw5s',
+            'file_id': 'KRaS4WdKQFzpmaN',
             'img_size_infer': (128, 128),
             'threshold': 0.627  # FPR=0.01
         },
