@@ -194,7 +194,7 @@ DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統�
 
 我們感謝所有走在前面的人，他們的工作對我們的研究有莫大的幫助。
 
-如果您認為我們的工作對您有幫助，請引用以下相關論文：
+如果您認為我們的工作對您有幫助，請引用我們的專案：
 
 ```bibtex
 @misc{lin2024docclassifier,
@@ -202,42 +202,7 @@ DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統�
   title = {DocClassifier},
   year = {2024},
   publisher = {GitHub},
-  journal = {GitHub repository},
-  doi = {10.5281/zenodo.10538356},
-  howpublished = {\url{https://github.com/DocsaidLab/DocClassifier}}
-}
-
-@misc{rw2019timm,
-  author = {Ross Wightman},
-  title = {PyTorch Image Models},
-  year = {2019},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  doi = {10.5281/zenodo.4414861},
-  howpublished = {\url{https://github.com/rwightman/pytorch-image-models}}
-}
-
-@misc{gpiosenka_cards_2023,
-  author = {Gerry},
-  title = {{Cards Image Dataset for Classification}},
-  year = {2023},
-  howpublished = {\url{https://www.kaggle.com/datasets/gpiosenka/cards-image-datasetclassification?resource=download}},
-  note = {Accessed: 2024-01-19},
-  license = {CC0: Public Domain}
-}
-
-@inproceedings{deng2018arcface,
-title={ArcFace: Additive Angular Margin Loss for Deep Face Recognition},
-author={Deng, Jiankang and Guo, Jia and Niannan, Xue and Zafeiriou, Stefanos},
-booktitle={CVPR},
-year={2019}
-}
-
-@inproceedings{wang2018cosface,
-  title={Cosface: Large margin cosine loss for deep face recognition},
-  author={Wang, Hao and Wang, Yitong and Zhou, Zheng and Ji, Xing and Gong, Dihong and Zhou, Jingchao and Li, Zhifeng and Liu, Wei},
-  booktitle={Proceedings of the IEEE conference on computer vision and pattern recognition},
-  pages={5265--5274},
-  year={2018}
+  url = {https://github.com/DocsaidLab/DocClassifier},
+  note = {GitHub repository}
 }
 ```
