@@ -68,6 +68,50 @@ DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統�
    pip install dist/docclassifier_docsaid-*-py3-none-any.whl
    ```
 
+## 模型推論
+
+> [!TIP]
+> 我們有設計了自動下載模型的功能，當程式檢查你缺少模型時，會自動連接到我們的伺服器進行下載。
+
+確保註冊資料已經準備好之後，我們就可以開始進行模型推論。
+
+以下是一個簡單的範例：
+
+```python
+import cv2
+from skimage import io
+from docclassifier import DocClassifier
+
+img = io.imread('https://github.com/DocsaidLab/DocClassifier/blob/main/docs/test_driver.jpg?raw=true')
+img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+model = DocClassifier()
+
+most_similar, max_score = model(img)
+print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
+# >>> most_similar: None, max_score: 0.0000
+```
+
+在預設的情況下，這個範例會返回 `None` 和 `0.0000`，這是因為我們預設的註冊資料和輸入圖片差異非常大。因此模型判斷這張圖片和註冊資料之間的相似性非常低。
+
+這種時候你可以考慮降低 `threshold` 參數：
+
+```python
+model = DocClassifier(
+    threshold=0.6
+)
+
+# 重新進行推論
+most_similar, max_score = model(img)
+print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
+# >>> most_similar: 台灣駕照正面, max_score: 0.6116
+```
+
+這次你就會得到一個標籤名稱和一個分數：`台灣駕照正面` 和 `0.6116`。這個分數代表了輸入圖片和註冊資料之間的相似性。
+
+> [!TIP]
+> DocClassifier 已經用 `__call__` 進行了封裝，因此你可以直接呼叫實例進行推論。
+
 ## 模型設計
 
 一個較為完整的模型功能，都不是一蹴可幾的，中間必須經過多次的調整和設計。

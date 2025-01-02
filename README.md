@@ -68,6 +68,46 @@ For more details, please refer to the [**DocClassifier Documents**](https://docs
    pip install dist/docclassifier_docsaid-*-py3-none-any.whl
    ```
 
+## Inference
+
+> [!TIP]
+> We have designed an automatic model download feature. When the program detects that you are missing the model, it will automatically connect to our server to download it.
+
+Here is a simple example:
+
+```python
+import cv2
+from skimage import io
+from docclassifier import DocClassifier
+
+img = io.imread('https://github.com/DocsaidLab/DocClassifier/blob/main/docs/test_driver.jpg?raw=true')
+img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+model = DocClassifier()
+
+most_similar, max_score = model(img)
+print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
+# >>> most_similar: None, max_score: 0.0000
+```
+
+By default, this example returns `None` and `0.0000` because the difference between our default registration data and the input image is significant. Therefore, the model finds the similarity between the image and the registration data to be very low.
+
+In this case, you may consider lowering the `threshold` parameter:
+
+```python
+model = DocClassifier(
+    threshold=0.6
+)
+
+# Re-run the inference
+most_similar, max_score = model(img)
+print(f'most_similar: {most_similar}, max_score: {max_score:.4f}')
+# >>> most_similar: Taiwan driver's license front, max_score: 0.6116
+```
+
+> [!TIP]
+> MRZScanner has been encapsulated with `__call__`, so you can directly call the instance for inference.
+
 ## Model Design
 
 Creating a comprehensive model involves multiple adjustments and design iterations.
