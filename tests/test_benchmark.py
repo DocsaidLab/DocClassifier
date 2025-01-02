@@ -1,15 +1,16 @@
-import docsaidkit as D
+import capybara as cb
+
 from docclassifier import DocClassifier
 
-DIR = D.get_curdir(__file__)
+DIR = cb.get_curdir(__file__)
 
 classifier = DocClassifier(
     register_root='/home/shayne/workspace/DocClassifier/data/private/RegisterCard',
     model_cfg='20240326'
 )
 
-fs = D.get_files(DIR.parent / 'benchmark' /
-                 'jpn_driver_color_benchmark_dataset', suffix=['.jpg'])
+fs = cb.get_files(DIR.parent / 'benchmark' /
+                  'jpn_driver_color_benchmark_dataset', suffix=['.jpg'])
 for f in fs:
-    img = D.imread(f)
+    img = cb.imread(f)
     print(f' 定義為：{f.parent.name}，預測為：{classifier(img)[0]}')

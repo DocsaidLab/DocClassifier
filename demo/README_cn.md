@@ -37,9 +37,6 @@
 在 `demo_ipcam.py` 中，有一段程式碼：
 
 ```python
-import docsaidkit as D
-from docclassifier import DocClassifier
-
 IPADDR = '192.168.0.179'  # Change this to your IP camera address
 ...
 ```

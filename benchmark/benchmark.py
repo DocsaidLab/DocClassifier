@@ -1,12 +1,13 @@
 from itertools import combinations
 
-import docsaidkit as D
+import capybara as cb
 import numpy as np
 import prettytable
-from docclassifier import DocClassifier
 from sklearn.metrics import roc_curve
 
-DIR = D.get_curdir(__file__)
+from docclassifier import DocClassifier
+
+DIR = cb.get_curdir(__file__)
 
 LABEL_MAPPING = {
     'Doc_A': 0,
@@ -58,7 +59,7 @@ def export_tpr_fpr_table(comb_scores, comb_labels, index):
 def main():
 
     model = DocClassifier(model_cfg='20240326')
-    ds = D.load_json(DIR / 'real_cache.json')
+    ds = cb.load_json(DIR / 'real_cache.json')
 
     # Checking feature precision in different decimal places
     for i in range(1, 8):
@@ -66,13 +67,13 @@ def main():
         print(f"Round: {i}\n\n")
 
         comb_scores, comb_labels = [], []
-        for batch in D.Tqdm(D.make_batch(ds, batch_size=1024), total=1 + len(ds) // 1024):
+        for batch in cb.Tqdm(cb.make_batch(ds, batch_size=1024), total=1 + len(ds) // 1024):
             feats, labels = [], []
             for data in batch:
                 lb = data[0]
                 img_path = DIR / 'docs_benchmark_dataset' / \
-                    lb / D.Path(data[1]).name
-                img = D.imread(img_path)
+                    lb / cb.Path(data[1]).name
+                img = cb.imread(img_path)
                 feat = model.classifier.extract_feature(img)
                 feat = feat.round(i)
 

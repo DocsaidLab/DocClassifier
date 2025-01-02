@@ -37,9 +37,6 @@ For instance, in this image, the assigned domain is: `192.168.0.179`.
 In `demo_ipcam.py`, there is a section of code:
 
 ```python
-import docsaidkit as D
-from docclassifier import DocClassifier
-
 IPADDR = '192.168.0.179'  # Change this to your IP camera address
 ...
 ```

@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Union
 
-import docsaidkit as D
+import capybara as cb
 import numpy as np
 
 from .margin_based import Inference as MarginBasedInference
@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 
-class ModelType(D.EnumCheckMixin, Enum):
+class ModelType(cb.EnumCheckMixin, Enum):
     margin_based = 0
 
 
@@ -22,10 +22,10 @@ class DocClassifier:
         *,
         model_type: ModelType = ModelType.margin_based,
         model_cfg: str = None,
-        backend: D.Backend = D.Backend.cpu,
+        backend: cb.Backend = cb.Backencb.cpu,
         gpu_id: int = 0,
         threshold: float = None,
-        register_root: Union[str, D.Path] = None,
+        register_root: Union[str, cb.Path] = None,
         **kwargs
     ):
         model_type = ModelType.obj_to_enum(model_type)
@@ -58,7 +58,7 @@ class DocClassifier:
     def list_models(self) -> list:
         return list(self.classifier.configs.keys())
 
-    def get_register(self, register_root: Union[str, D.Path]) -> dict:
+    def get_register(self, register_root: Union[str, cb.Path]) -> dict:
         return self.classifier.get_register(register_root)
 
     def extract_feature(self, img: np.ndarray) -> np.ndarray:
