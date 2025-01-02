@@ -3,15 +3,16 @@
 # DocClassifier
 
 <p align="left">
-    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
-    <a href="https://github.com/DocsaidLab/DocClassifier/releases"><img src="https://img.shields.io/github/v/release/DocsaidLab/DocClassifier?color=ffa"></a>
-    <a href=""><img src="https://img.shields.io/badge/python-3.8+-aff.svg"></a>
+   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
+   <a href=""><img src="https://img.shields.io/badge/python-3.10+-aff.svg"></a>
+   <a href="https://github.com/DocsaidLab/DocClassifier/releases"><img src="https://img.shields.io/github/v/release/DocsaidLab/DocClassifier?color=ffa"></a>
+   <a href="https://pypi.org/project/docclassifier_docsaid/"><img src="https://img.shields.io/pypi/v/docclassifier_docsaid.svg"></a>
 </p>
 
 ## 介紹
 
 <div align="center">
-    <img src="./docs/title.jpg" width="800">
+    <img src="https://github.com/DocsaidLab/DocClassifier/raw/main/docs/title.jpg?raw=true" width="800">
 </div>
 
 DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統，受到傳統分類器面臨的挑戰啟發，解決了文件類型快速增加和難以定義的問題。它採用了 PartialFC 特徵學習架構，集成了 CosFace 和 ArcFace 等技術，使模型能夠在不需要大量預定義類別的情況下進行精確分類。通過擴展數據集和引入 ImageNet-1K 和 CLIP 模型，我們提高了性能並增加了模型的適應性和可擴展性。模型使用 PyTorch 進行訓練，在 ONNXRuntime 上進行推理，並支持將模型轉換為 ONNX 格式以便在不同平台上部署。在測試中，我們的模型達到了超過 90%的準確率，並具有快速推理速度和快速添加新文件類型的能力，從而滿足了大多數應用場景的需求。
@@ -22,19 +23,64 @@ DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統�
 
 如果你想知道更多的細節，請參閱 [**DocClassifier Documents**](https://docsaid.org/docs/docclassifier/)。
 
+## 安裝
+
+### 透過 PyPI 安裝
+
+1. 安裝 `docclassifier-docsaid`：
+
+   ```bash
+   pip install docclassifier-docsaid
+   ```
+
+2. 驗證安裝：
+
+   ```bash
+   python -c "import docclassifier; print(docclassifier.__version__)"
+   ```
+
+3. 如果你看到版本號，則表示安裝成功。
+
+### 從 GitHub 安裝
+
+1. 從 GitHub 下載專案：
+
+   ```bash
+   git clone https://github.com/DocsaidLab/DocClassifier.git
+   ```
+
+2. 安裝 wheel 套件：
+
+   ```bash
+   pip install wheel
+   ```
+
+3. 建置 whl 檔案：
+
+   ```bash
+   cd DocClassifier
+   python setup.py bdist_wheel
+   ```
+
+4. 安裝 whl 檔案：
+
+   ```bash
+   pip install dist/docclassifier_docsaid-*-py3-none-any.whl
+   ```
+
 ## 模型設計
 
 一個較為完整的模型功能，都不是一蹴可幾的，中間必須經過多次的調整和設計。
 
 ### 第一代模型
 
-![arch_1.jpg](./docs/arch1.jpg)
+![arch_1.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/arch1.jpg?raw=true)
 
 第一代模型是我們最早期的版本，它的基本架構分成四個部分：
 
 1. **特徵提取**
 
-   ![pp-lcnet.jpg](./docs/lcnet_arch.jpg)
+   ![pp-lcnet.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/lcnet_arch.jpg?raw=true)
 
    這部分主要是用來將影像轉換成向量，這裡使用了 [**PP-LCNet**](https://arxiv.org/abs/2109.15099) 作為特徵提取器。
 
@@ -42,7 +88,7 @@ DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統�
 
 2. **CosFace**
 
-   [![cosface.jpg](./docs/cosface.jpg)](https://arxiv.org/pdf/1801.09414.pdf)
+   [![cosface.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/cosface.jpg?raw=true)](https://arxiv.org/pdf/1801.09414.pdf)
 
    我們打從一開始就想測試度量學習的效果，所以我們直接跳過了傳統分類器的實作，首先使用了 [**CosFace**](https://arxiv.org/abs/1801.09414) 的方法。由於這裡的重點不是帶大家認識 Margin-based 的方法，所以這裡不要占用太多篇幅。如果你有需要的話，我們之後可以在論文閱讀那裡新增一個主題來專門介紹相關的演進。
 
@@ -84,7 +130,7 @@ DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統�
 
 ### 第二代模型
 
-![arch_2.jpg](./docs/arch2.jpg)
+![arch_2.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/arch2.jpg?raw=true)
 
 第二代模型是我們在第一代模型的基礎上進行了一些改進：
 
@@ -98,7 +144,7 @@ DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統�
 
 2. **改用 PartialFC**
 
-   ![partialfc.jpg](./docs/pfc_arch.jpg)
+   ![partialfc.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/pfc_arch.jpg?raw=true)
 
    類別數量一提上去，巨大分類頭的問題立刻就暴露出來了。
 
@@ -139,7 +185,7 @@ DocClassifier 是一個基於 Metric Learning 技術的文件圖像分類系統�
 
 ### 第三代模型
 
-![arch_3.jpg](./docs/arch3.jpg)
+![arch_3.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/arch3.jpg?raw=true)
 
 我們追求更穩定的模型，所以我們嘗試引入一些新的方法：
 

@@ -3,15 +3,16 @@
 # DocClassifier
 
 <p align="left">
-    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
-    <a href="https://github.com/DocsaidLab/DocClassifier/releases"><img src="https://img.shields.io/github/v/release/DocsaidLab/DocClassifier?color=ffa"></a>
-    <a href=""><img src="https://img.shields.io/badge/python-3.8+-aff.svg"></a>
+   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
+   <a href=""><img src="https://img.shields.io/badge/python-3.10+-aff.svg"></a>
+   <a href="https://github.com/DocsaidLab/DocClassifier/releases"><img src="https://img.shields.io/github/v/release/DocsaidLab/DocClassifier?color=ffa"></a>
+   <a href="https://pypi.org/project/docclassifier_docsaid/"><img src="https://img.shields.io/pypi/v/docclassifier_docsaid.svg"></a>
 </p>
 
 ## Introduction
 
 <div align="center">
-    <img src="./docs/title.jpg" width="800">
+   <img src="https://github.com/DocsaidLab/DocClassifier/raw/main/docs/title.jpg?raw=true" width="800">
 </div>
 
 DocClassifier is a document image classification system based on Metric Learning technology, inspired by the challenges faced by traditional classifiers in handling the rapid increase in document types and their definitional ambiguities. It adopts the PartialFC feature learning architecture and integrates techniques such as CosFace and ArcFace, allowing the model to perform accurate classification without a large number of predefined categories. By expanding the dataset and incorporating ImageNet-1K and CLIP models, we enhanced performance and increased the model's adaptability and scalability. The model is trained using PyTorch, infers on ONNXRuntime, and supports conversion to the ONNX format for deployment across different platforms. Our testing showed the model achieved over 90% accuracy, with fast inference speed and the ability to quickly add new document types, meeting the needs of most application scenarios.
@@ -22,19 +23,64 @@ Given the extensive usage instructions and settings explanations for this projec
 
 For more details, please refer to the [**DocClassifier Documents**](https://docsaid.org/en/docs/docclassifier/).
 
+## Installation
+
+### via PyPI
+
+1. Install the package from PyPI:
+
+   ```bash
+   pip install docclassifier-docsaid
+   ```
+
+2. Verify the installation:
+
+   ```bash
+   python -c "import docclassifier; print(docclassifier.__version__)"
+   ```
+
+3. If the version number is displayed, the installation was successful.
+
+### via Git Clone
+
+1. Clone this repository:
+
+   ```bash
+   git clone https://github.com/DocsaidLab/DocClassifier.git
+   ```
+
+2. Install the wheel package:
+
+   ```bash
+   pip install wheel
+   ```
+
+3. Build the wheel file:
+
+   ```bash
+   cd DocClassifier
+   python setup.py bdist_wheel
+   ```
+
+4. Install the built wheel file:
+
+   ```bash
+   pip install dist/docclassifier_docsaid-*-py3-none-any.whl
+   ```
+
 ## Model Design
 
 Creating a comprehensive model involves multiple adjustments and design iterations.
 
 ### First Generation Model
 
-![arch_1.jpg](./docs/arch1.jpg)
+![arch_1.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/arch1.jpg?raw=true)
 
 The first-generation model, our earliest version, has a basic architecture divided into four parts:
 
 1. **Feature Extraction**
 
-   ![pp-lcnet.jpg](./docs/lcnet_arch.jpg)
+   ![pp-lcnet.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/lcnet_arch.jpg?raw=true)
 
    This part converts images into vectors using [**PP-LCNet**](https://arxiv.org/abs/2109.15099) as the feature extractor.
 
@@ -42,7 +88,7 @@ The first-generation model, our earliest version, has a basic architecture divid
 
 2. **CosFace**
 
-   [![cosface.jpg](./docs/cosface.jpg)](https://arxiv.org/pdf/1801.09414.pdf)
+   [![cosface.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/cosface.jpg?raw=true)](https://arxiv.org/pdf/1801.09414.pdf)
 
    To test the effectiveness of metric learning, we directly used [**CosFace**](https://arxiv.org/abs/1801.09414), skipping traditional classifiers. CosFace introduces a margin parameter to the softmax loss function, enhancing the model's ability to distinguish different classes during training.
 
@@ -76,7 +122,7 @@ Our conclusion: **The model was overfitting!**
 
 ### Second Generation Model
 
-![arch_2.jpg](./docs/arch2.jpg)
+![arch_2.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/arch2.jpg?raw=true)
 
 The second-generation model introduced several improvements:
 
@@ -86,7 +132,7 @@ The second-generation model introduced several improvements:
 
 2. **Using PartialFC**
 
-   ![partialfc.jpg](./docs/pfc_arch.jpg)
+   ![partialfc.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/pfc_arch.jpg?raw=true)
 
    As class numbers increased, we encountered the issue of large classification heads. [**PartialFC**](https://arxiv.org/abs/2203.15565) was introduced, demonstrating that sampling only 10% of classes during Softmax-based loss function training retained accuracy.
 
@@ -100,7 +146,7 @@ The second-generation model introduced several improvements:
 
 ### Third Generation Model
 
-![arch_3.jpg](./docs/arch3.jpg)
+![arch_3.jpg](https://github.com/DocsaidLab/DocClassifier/raw/main/docs/arch3.jpg?raw=true)
 
 To achieve more stable models, we integrated new techniques:
 
