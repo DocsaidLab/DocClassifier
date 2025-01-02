@@ -44,7 +44,7 @@ class Inference:
     def __init__(
         self,
         gpu_id: int = 0,
-        backend: cb.Backend = cb.Backencb.cpu,
+        backend: cb.Backend = cb.Backend.cpu,
         model_cfg: str = '20240326',
         threshold: float = None,
         register_root: Union[str, cb.Path] = None,
@@ -66,7 +66,27 @@ class Inference:
         return (np.dot(feat1, feat2) + 1) / 2
 
     def get_register(self, root: Union[str, cb.Path] = None):
-        root = DIR.parent / 'register' if root is None else cb.Path(root)
+
+        if root is None:
+            root = DIR.parent / 'register'
+            if not root.exists():
+                cb.download_from_google(
+                    file_id='10QplO0U-ldcg5-MSu5w-BQOHNr5_WwWa',
+                    file_name='register.zip',
+                    target=str(DIR.parent)
+                )
+
+                # unzip
+                import subprocess
+                subprocess.run([
+                    'unzip', '-o', str(DIR.parent / 'register.zip'), '-d', str(DIR.parent)])
+
+                # delete zip file
+                cb.Path(DIR.parent / 'register.zip').unlink()
+
+        else:
+            root = cb.Path(root)
+
         register = {}
         for f in cb.get_files(root, suffix=['.jpg', '.jpeg', '.png']):
             parts = f.relative_to(root).parts

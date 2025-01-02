@@ -22,7 +22,7 @@ class DocClassifier:
         *,
         model_type: ModelType = ModelType.margin_based,
         model_cfg: str = None,
-        backend: cb.Backend = cb.Backencb.cpu,
+        backend: cb.Backend = cb.Backend.cpu,
         gpu_id: int = 0,
         threshold: float = None,
         register_root: Union[str, cb.Path] = None,
