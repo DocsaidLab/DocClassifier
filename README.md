@@ -7,6 +7,7 @@
    <a href=""><img src="https://img.shields.io/badge/python-3.10+-aff.svg"></a>
    <a href="https://github.com/DocsaidLab/DocClassifier/releases"><img src="https://img.shields.io/github/v/release/DocsaidLab/DocClassifier?color=ffa"></a>
    <a href="https://pypi.org/project/docclassifier_docsaid/"><img src="https://img.shields.io/pypi/v/docclassifier_docsaid.svg"></a>
+   <a href="https://pypi.org/project/docclassifier_docsaid/"><img src="https://img.shields.io/pypi/dm/docclassifier_docsaid?color=9cf"></a>
 </p>
 
 ## Introduction
