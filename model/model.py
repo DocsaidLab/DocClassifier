@@ -1,27 +1,26 @@
 from itertools import combinations
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Union
 
-import docsaidkit as D
-import docsaidkit.torch as DT
 import lightning as L
 import matplotlib.pyplot as plt
 import numpy as np
 import prettytable
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from docsaidkit.torch import ArcFace, CosFace
+from capybara import (Tqdm, dump_json, get_curdir, get_files, imread, imwrite,
+                      load_json)
+from chameleon import CosFace, build_neck
 from fitsne import FItSNE
+from otter import BaseMixin
 from sklearn.decomposition import PCA
-from torch.nn import Parameter
 from torch.nn.functional import normalize
-from torchmetrics.classification import AUROC, Accuracy, BinaryROC
+from torchmetrics.classification import AUROC, BinaryROC
 
 from .component import *
 from .partial_fc_v2 import PartialFC_V2
 
-DIR = D.get_curdir(__file__)
+DIR = get_curdir(__file__)
 
 INDOOR_ROOT = '/data/Dataset/indoor_scene_recognition/Images'
 
@@ -39,17 +38,17 @@ def get_num_classes(root: Union[str, Path] = None, use_imagenet: bool = False) -
         cache_dir = 'indoor_cache.json'
         augment_ratio = 24
 
-    if not (fp := DIR.parent.parent / 'data' / cache_dir).is_file():
-        fs_ind = D.get_files(data_root, suffix=['.jpg', '.png', '.jpeg'])
-        fs_ind_ = [str(f) for f in D.Tqdm(
-            fs_ind, desc='Drop Empty images.') if D.imread(f) is not None]
-        D.dump_json(fs_ind_, fp)
+    if not (fp := DIR.parent / 'data' / cache_dir).is_file():
+        fs_ind = get_files(data_root, suffix=['.jpg', '.png', '.jpeg'])
+        fs_ind_ = [str(f) for f in Tqdm(
+            fs_ind, desc='Drop Empty images.') if imread(f) is not None]
+        dump_json(fs_ind_, fp)
     else:
-        fs_ind_ = D.load_json(fp)
+        fs_ind_ = load_json(fp)
 
-    default_root = DIR.parent.parent / 'data' / 'unique_pool' \
+    default_root = DIR.parent / 'data' / 'unique_pool' \
         if root is None else root
-    fs = D.get_files(default_root, suffix=['.jpg'])
+    fs = get_files(default_root, suffix=['.jpg'])
 
     return (len(fs) + len(fs_ind_)) * augment_ratio  # withs augmentation
 
@@ -66,10 +65,11 @@ class IdentityMarginLoss(nn.Module):
         return logits
 
 
-class ClassifierModel(DT.BaseMixin, L.LightningModule):
+class ClassifierModel(BaseMixin, L.LightningModule):
 
     def __init__(self, cfg: Dict[str, Any]):
         super().__init__()
+
         self.cfg = cfg
         self.use_imagenet = cfg['common']['use_imagenet'] \
             if 'use_imagenet' in cfg['common'] else False
@@ -80,9 +80,9 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
 
         # Setup model
         cfg_model = cfg['model']
-        self.backbone = DT.Identity()
-        self.neck = DT.Identity()
-        self.head = DT.Identity()
+        self.backbone = nn.Identity()
+        self.neck = nn.Identity()
+        self.head = nn.Identity()
 
         if hasattr(cfg_model, 'backbone'):
             self.backbone = globals()[cfg_model['backbone']['name']](
@@ -96,7 +96,7 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
 
         if hasattr(cfg_model, 'neck'):
             cfg_model['neck'].update({'in_channels_list': channels})
-            self.neck = DT.build_neck(**cfg_model['neck'])
+            self.neck = build_neck(**cfg_model['neck'])
 
         if hasattr(cfg_model, 'head'):
             cfg_model['head']['options'].update({'in_channels_list': channels})
@@ -347,14 +347,6 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
             self.preview_dir / f'epoch_{self.current_epoch}_tsne.jpg', dpi=300)
         plt.close()
 
-    @ property
-    def preview_dir(self):
-        img_path = Path(self.cfg.root_dir) / "preview" / \
-            f'epoch_{self.current_epoch}'
-        if not img_path.exists():
-            img_path.mkdir(parents=True)
-        return img_path
-
     def preview(self, batch_idx, imgs, labels, logits, suffix='train'):
 
         # setup preview dir
@@ -373,4 +365,4 @@ class ClassifierModel(DT.BaseMixin, L.LightningModule):
 
             name = f'gt_{gt}_pred_{pred}.jpg'
             img_output_name = str(preview_dir / name)
-            D.imwrite(img, img_output_name)
+            imwrite(img, img_output_name)

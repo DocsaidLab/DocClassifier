@@ -1,13 +1,5 @@
 #!/bin/bash
 
-cat > trainer.py <<EOF
-from fire import Fire
-from DocClassifier.model import main_docclassifier_train
-
-if __name__ == '__main__':
-    Fire(main_docclassifier_train)
-EOF
-
 docker run \
     -e USER_ID=$(id -u) \
     -e GROUP_ID=$(id -g) \
@@ -16,6 +8,13 @@ docker run \
     --ipc=host --net=host \
     --cpuset-cpus="0-31" \
     -v $PWD/DocClassifier:/code/DocClassifier \
-    -v $PWD/trainer.py:/code/trainer.py \
     -v /data/Dataset:/data/Dataset \
-    -it --rm doc_classifier_train python trainer.py --cfg_name $1
+    -it --rm otter_base_image bash -c "
+echo '
+from fire import Fire
+from DocClassifier.model import main_classifier_train
+
+if __name__ == \"__main__\":
+    Fire(main_classifier_train)
+' > /code/trainer.py && python /code/trainer.py --cfg_name $1
+"

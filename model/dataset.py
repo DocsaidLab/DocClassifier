@@ -3,24 +3,23 @@ import warnings
 from typing import Any, Callable, List, Tuple, Union
 
 import albumentations as A
-import clip
 import cv2
-import docsaidkit as D
-import docsaidkit.torch as DT
 import numpy as np
 import torch
-from docsaidkit import INTER, Path
+from capybara import (INTER, Path, Tqdm, dump_json, get_curdir, get_files,
+                      imread, imresize, imrotate, load_json)
+from otter import BorderValueMixin, ShiftScaleRotate
 from PIL import Image
 from torch.nn.functional import normalize
 
-DIR = D.get_curdir(__file__)
+DIR = get_curdir(__file__)
 
 INDOOR_ROOT = '/data/Dataset/indoor_scene_recognition/Images'
 
 IMAGENET_ROOT = '/data/Dataset/ILSVRC2012/train'
 
 
-class CoarseDropout(DT.BorderValueMixin, A.CoarseDropout):
+class CoarseDropout(BorderValueMixin, A.CoarseDropout):
     ...
 
 
@@ -32,7 +31,7 @@ class DefaultImageAug:
 
             A.OneOf([
                 A.RandomResizedCrop(height=h, width=w, scale=(0.8, 1.0)),
-                DT.ShiftScaleRotate(
+                ShiftScaleRotate(
                     shift_limit=0.1,
                     scale_limit=0.1,
                     rotate_limit=15,
@@ -87,7 +86,7 @@ class ImageNetAug:
 
             A.OneOf([
                 A.RandomResizedCrop(height=h, width=w, scale=(0.8, 1.0)),
-                DT.ShiftScaleRotate(
+                ShiftScaleRotate(
                     shift_limit=0.1,
                     scale_limit=0.1,
                     rotate_limit=15,
@@ -109,7 +108,7 @@ class ImageNetAugFintune:
 
             A.OneOf([
                 A.RandomResizedCrop(height=h, width=w, scale=(0.8, 1.0)),
-                DT.ShiftScaleRotate(
+                ShiftScaleRotate(
                     shift_limit=0.1,
                     scale_limit=0.1,
                     rotate_limit=15,
@@ -188,9 +187,10 @@ class SynthDataset:
                 image_size=image_size, p=aug_ratio)
 
         self.use_clip = use_clip
-        # if self.use_clip:
-        #     self.clip_model, self.preprocess = clip.load(
-        #         'ViT-B/32', device='cpu')
+        if self.use_clip:
+            import clip
+            self.clip_model, self.preprocess = clip.load(
+                'ViT-B/32', device='cpu')
 
         self._build_dataset()
 
@@ -222,34 +222,34 @@ class SynthDataset:
             cache_name = 'indoor_cache.json'
 
         if not (fp := DIR.parent / 'data' / cache_name).is_file():
-            fs_ind = D.get_files(data_root, suffix=['.jpg', '.png', '.jpeg'])
-            fs_ind_ = [str(f) for f in D.Tqdm(
-                fs_ind, desc='Drop Empty images.') if D.imread(f) is not None]
-            D.dump_json(fs_ind_, fp)
+            fs_ind = get_files(data_root, suffix=['.jpg', '.png', '.jpeg'])
+            fs_ind_ = [str(f) for f in Tqdm(
+                fs_ind, desc='Drop Empty images.') if imread(f) is not None]
+            dump_json(fs_ind_, fp)
         else:
-            fs_ind_ = D.load_json(fp)
+            fs_ind_ = load_json(fp)
 
-        fs = D.get_files(self.root, suffix=['.jpg', '.png', '.jpeg'])
+        fs = get_files(self.root, suffix=['.jpg', '.png', '.jpeg'])
 
         dataset = []
 
         if self.use_imagenet:
 
             if not (fp_data := DIR.parent / 'data' / data_cache).is_file():
-                for label, f in enumerate(D.Tqdm(fs + fs_ind_, desc='Build Dataset')):
+                for label, f in enumerate(Tqdm(fs + fs_ind_, desc='Build Dataset')):
                     dataset.append((label, str(f), self._clip(f)))
-                D.dump_json(dataset, fp_data)
+                dump_json(dataset, fp_data)
             else:
-                dataset = D.load_json(fp_data)
+                dataset = load_json(fp_data)
         else:
 
             if self.use_clip:
                 warnings.warn(
                     'Clip model is not available for indoor dataset.')
 
-            for label, f in enumerate(D.Tqdm(fs + fs_ind_, desc='Build Dataset')):
-                img = D.imresize(
-                    img=D.imread(f),
+            for label, f in enumerate(Tqdm(fs + fs_ind_, desc='Build Dataset')):
+                img = imresize(
+                    img=imread(f),
                     size=self.image_size,
                     interpolation=self.interpolation
                 )
@@ -257,9 +257,9 @@ class SynthDataset:
                 h_half = img.shape[0] // 2
 
                 d01 = (label * 24 + 1, img, False)
-                d02 = (label * 24 + 2, D.imrotate(img, 90), False)
-                d03 = (label * 24 + 3, D.imrotate(img, 180), False)
-                d04 = (label * 24 + 4, D.imrotate(img, 270), False)
+                d02 = (label * 24 + 2, imrotate(img, 90), False)
+                d03 = (label * 24 + 3, imrotate(img, 180), False)
+                d04 = (label * 24 + 4, imrotate(img, 270), False)
                 d05 = (label * 24 + 5, cv2.flip(img, 0), False)
                 d06 = (label * 24 + 6, cv2.flip(d02[1], 0), False)
                 d07 = (label * 24 + 7, cv2.flip(d03[1], 0), False)
@@ -288,7 +288,7 @@ class SynthDataset:
                 ])
 
         label, img, clip_feat = [], [], []
-        for d in D.Tqdm(dataset):
+        for d in Tqdm(dataset):
             label.append(d[0])
             img.append(d[1])
             clip_feat.append(np.array(d[2], dtype='float32'))
@@ -308,9 +308,9 @@ class SynthDataset:
 
         # Loading image from file, because imagenet dataset is too large
         if self.use_imagenet:
-            img = D.imread(img)
+            img = imread(img)
 
-        img = D.imresize(img, self.image_size, self.interpolation)
+        img = imresize(img, self.image_size, self.interpolation)
 
         if self.use_clip:
             clip_feat = self.feats[idx]
@@ -365,21 +365,21 @@ class RealDataset:
 
     def _build_dataset(self):
         if (fp := DIR.parent / 'benchmark' / 'real_cache.json').is_file():
-            ds = D.load_json(fp)
+            ds = load_json(fp)
         else:
-            fs = D.get_files(self.root, suffix=['.jpg', '.png', '.jpeg'])
+            fs = get_files(self.root, suffix=['.jpg', '.png', '.jpeg'])
             ds = [(f.parent.name, str(f))
                   for f in fs if f.parent.name != 'Passport']
             local_random = random.Random()
             local_random.seed(42)
             local_random.shuffle(ds)
-            D.dump_json(ds, fp)
+            dump_json(ds, fp)
         return ds
 
     def __getitem__(self, idx):
         label, file = self.dataset[idx]
-        img = D.imread(file)
-        img = D.imresize(img, self.image_size)
+        img = imread(file)
+        img = imresize(img, self.image_size)
         if self.return_tensor:
             img = img.transpose(2, 0, 1).astype('float32') / 255.0
         return img, self.label_mapper[label]
