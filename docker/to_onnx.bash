@@ -8,7 +8,6 @@ docker run \
     --ipc=host --net=host \
     --cpuset-cpus="0-31" \
     -v $PWD/DocClassifier:/code/DocClassifier \
-    -v $PWD/torch2onnx.py:/code/torch2onnx.py \
     -it --rm otter_base_image bash -c "
 echo '
 from fire import Fire
